@@ -1,0 +1,45 @@
+# Roadmap
+
+## Available workflow
+
+- Installable package and CLI with optional ML and PLY dependencies.
+- Versioned dataset contracts, reversible class mappings, and preserved point IDs.
+- Seeded synthetic scenes, CPU voxel preprocessing, and prepared-bundle inspection.
+- WarpConvNet MinkUNet18 for NVIDIA GPUs and a portable PyTorch CPU fallback.
+- Training, original-point evaluation, and prediction in original dataset class IDs.
+- Model bundles with safetensors weights, normalization, metadata, and checksums.
+- Epoch checkpoints with Adam and random state, explicit resume, durable attempt
+  records, and verified completed retries.
+- Separate CPU and GPU container targets with explicit input, output, and cache mounts.
+- The `pointcloud-workflows` distribution, `pointcloud_workflows` imports, and
+  `pcw` CLI, with old command/import aliases and preserved artifact formats.
+
+Use the [GPU and CPU quickstart](quickstart.md) for a complete run.
+
+## Next stages
+
+1. Complete the [public readiness checklist](../public-readiness.md) before an
+   explicitly authorized launch. The [migration guide](../migration.md) defines
+   the implemented compatibility policy.
+2. Release the separate NumPy-only PointCloud Core library and test its versioned
+   integration, then add a public-data recipe and spatial chunking for larger scenes.
+3. Prepare versioned package and image releases with schema compatibility guidance.
+4. Package explicit batch runs as Helm Jobs with preserved dataset and result storage.
+5. Add optional Rancher Fleet examples for existing cluster operators.
+6. Add repeatable GPU performance benchmarks with fixed inputs and model bundles.
+
+The repository remains private. Public release and documentation publication are
+separate decisions; the [public RPTU guide](https://rptu.gitbook.io/rptu-ai-toolkit/)
+continues to describe the shared baseline. See [project lineage](../project-lineage.md)
+and [publication status](../gitbook-publication.md).
+
+Training currently resumes at completed epoch boundaries using the original run
+settings. Step-level checkpoints, changing settings while resuming, scheduler
+state, and distributed storage coordination remain separate future extensions.
+
+Helm and Fleet will package the same CLI. Configuration reconciliation must not
+silently launch training runs. A GPU host, cluster provisioner, or experiment server
+is not a required dependency of the local package.
+
+BIM export, multi-GPU training, and additional source formats remain follow-up
+work. Research history remains in the original RPTU repository.

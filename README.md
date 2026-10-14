@@ -1,0 +1,315 @@
+# PointCloud Workflows
+
+[![CPU package tests](https://github.com/ajavanma/PointCloud-Workflows/actions/workflows/tests.yml/badge.svg)](https://github.com/ajavanma/PointCloud-Workflows/actions/workflows/tests.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+PointCloud Workflows is a GPU-first point-cloud segmentation toolkit for NVIDIA RTX 4070 systems, with a portable CPU fallback. It combines synthetic data generation, dataset validation, voxel preprocessing, training, evaluation, and prediction. The project originated in LiDAR segmentation and BIM research and provides reusable public dataset contracts and reproducible workflows.
+
+WarpConvNet MinkUNet18 provides the GPU model. A PyTorch voxel MLP provides
+portable training and inference on CPU or CUDA. Both share the CLI, dataset
+contracts, and original point mapping. Saved models retain their architecture;
+WarpConvNet bundles require CUDA, while PyTorch bundles can move between devices.
+
+## Project identity and compatibility
+
+PointCloud Workflows is an independent successor to
+[RPTU AI Toolkit](https://github.com/ajavanma/RPTU_AI_Toolkit), with a fresh Git
+history containing the maintained implementation. Research scripts, old branches,
+logs, and historical commit metadata are not part of this project. The original
+MIT attribution and four approved research illustrations remain.
+See [project lineage](docs/project-lineage.md).
+
+The distribution is `pointcloud-workflows`, the Python module is
+`pointcloud_workflows`, and the installed command is `pcw`. The old `rptu` command
+and `rptu_ai_toolkit` imports remain compatibility aliases. Existing datasets,
+model bundles, and run checkpoints retain their formats and `rptu-*` identifiers.
+Use a fresh virtual environment when moving from the old distribution; see the
+[migration guide](docs/migration.md) for installation and resume compatibility.
+
+The documentation in this repository describes PointCloud Workflows. The
+[public RPTU guide](https://rptu.gitbook.io/rptu-ai-toolkit/) describes the shared
+RPTU baseline; a PointCloud Workflows documentation site has not been published.
+See [documentation publication](docs/gitbook-publication.md).
+
+## Install the GPU or CPU runtime
+
+For NVIDIA RTX 4070 systems, use Linux x86_64 and Python 3.11 with an NVIDIA driver
+compatible with CUDA 12.8:
+
+```sh
+python3.11 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements/gpu-cu128.txt
+python -m pip install .
+```
+
+For the CPU fallback, install `.[ml]`. On Linux, select the CPU PyTorch wheel first:
+
+```sh
+python -m pip install torch==2.13.0 --index-url https://download.pytorch.org/whl/cpu
+python -m pip install '.[ml]'
+```
+
+The CPU ML extra uses PyTorch 2.13.0. The separate GPU binary profile retains
+PyTorch 2.10.0 to match WarpConvNet; see the [runtime advisory review](docs/runtime-advisories.md).
+Do not install `.[ml]` over that GPU profile.
+
+On macOS, `python -m pip install '.[ml]'` is sufficient. The base installation
+below remains useful for data preparation without any ML dependencies.
+
+## Install and run the CPU demo
+
+Use Python 3.11 or newer. From the repository root:
+
+```sh
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install .
+pcw --help
+pcw doctor
+pcw config validate --config examples/config.yaml
+pcw synthetic --output runs/demo-data --seed 42
+pcw inspect --manifest runs/demo-data/manifest.json
+pcw preprocess --manifest runs/demo-data/manifest.json --output runs/demo-prepared --voxel-size 0.1
+pcw inspect --prepared runs/demo-prepared/prepared.json
+```
+
+The package depends on PyYAML and NumPy. Installation does not install PyTorch,
+WarpConvNet, MinkowskiEngine, Open3D, or CUDA. Python 3.11 and 3.12 are covered by
+the CPU CI matrix.
+
+The demo has four small scenes assigned to train, validation, test, and prediction
+splits. It deliberately includes invalid rows, ignored labels, class collisions,
+and negative coordinates. It demonstrates data correctness, not real-world model
+quality. Existing output directories are never overwritten; choose a fresh output
+path for another run. Missing parent directories are created automatically.
+`generation.json` records the seed, generator revision, and package versions.
+
+NPZ input works with the base installation. To read ASCII or binary PLY vertices,
+install the optional reader with `python -m pip install '.[io]'` from the repository.
+PCD/ASC adapters remain future work.
+
+The module entry point is equivalent to the installed command:
+
+```sh
+python -m pointcloud_workflows doctor --json
+```
+
+## Train, evaluate, and predict
+
+With the `ml` dependencies installed and the demo prepared:
+
+```sh
+pcw train --prepared runs/demo-prepared/prepared.json --output runs/demo-model --device auto --epochs 20
+pcw evaluate --prepared runs/demo-prepared/prepared.json --model runs/demo-model --output runs/demo-evaluation
+pcw predict --prepared runs/demo-prepared/prepared.json --model runs/demo-model --output runs/demo-predictions
+```
+
+Automatic training uses WarpConvNet on CUDA when available, otherwise the CPU
+fallback. Select explicitly with `--backend warpconvnet --device cuda` or
+`--backend torch --device cpu`. Evaluation and prediction use the saved model's
+architecture. The fallback is a per-voxel feature classifier, with a different
+capacity from the spatial MinkUNet18 model.
+
+Training writes a model bundle with safetensors weights, feature normalization,
+class mapping, and checksums. Evaluation reports original-point metrics;
+prediction exports original class IDs, point IDs, row positions, and validity
+masks. New runs require a fresh output path. The default bound is 100,000 voxels per
+scene; `--max-voxels` changes it without silently truncating inputs.
+
+Training saves an initial checkpoint and one after every completed epoch. If a
+run is interrupted, resume it in the same output directory:
+
+```sh
+pcw train --prepared runs/demo-prepared/prepared.json --output runs/demo-model --resume
+```
+
+Resume restores the saved settings, model, Adam optimizer, and random state. It
+continues to the original total epoch count; changing the dataset or training
+settings requires a new run. A completed run returns its verified saved report
+without retraining. Checkpoints and attempt records survive failures, and an
+exclusive process lock prevents simultaneous writers to the same run directory.
+The run directory must be on a local POSIX filesystem, such as a Linux or macOS
+local disk; shared network storage is not a distributed locking service.
+
+See [training](docs/gitbook/train.md), [models](docs/gitbook/model.md), and
+[container execution](docs/containers.md) for full instructions.
+
+## Commands
+
+| Command | Behavior |
+| --- | --- |
+| `pcw --help` | Show commands and their availability |
+| `pcw --version` | Show the package version |
+| `pcw doctor [--json]` | Report Python, platform, package metadata, and supported capabilities |
+| `pcw config validate --config PATH [--json]` | Validate YAML and show the resolved configuration |
+| `pcw synthetic --output DIR [--seed N] [--json]` | Generate a reproducible four-scene dataset |
+| `pcw inspect --manifest PATH [--json]` | Validate the manifest, file checksums, arrays, and labels; report point counts |
+| `pcw inspect --prepared PATH [--json]` | Validate every prepared scene, mapping, and label target; report point and voxel counts |
+| `pcw preprocess --manifest PATH --output DIR --voxel-size SIZE [--json]` | Filter invalid rows and voxelize every scene on the CPU |
+| `pcw train --prepared PATH --output DIR [--resume]` | Start a model run or resume its latest complete epoch |
+| `pcw evaluate --prepared PATH --model DIR --output DIR` | Evaluate a saved model at original point resolution |
+| `pcw predict --prepared PATH --model DIR --output DIR` | Export original dataset labels and point IDs |
+| `pcw benchmark` | Reserved for the benchmark workflow |
+
+Diagnostics inspect installed package metadata without importing ML libraries.
+Runtime and device selection happen when a model command starts.
+
+Successful commands and help exit with status `0`. Invalid arguments,
+configuration errors, and unimplemented commands exit with status `2`; error
+messages go to stderr. `--json` emits JSON on stdout on success.
+
+## Dataset contracts
+
+Datasets use a versioned JSON manifest with scene IDs and splits, relative file
+paths, SHA-256 checksums, coordinate units, ordered feature names, and explicit
+class IDs. No specific university dataset or directory layout is assumed.
+Each NPZ scene contains `coords[N,3]`, `features[N,F]`, optional `labels[N]`, and
+optional original `point_indices[N]`. Labels are required for train/val/test and
+optional for prediction. Arrays are numeric and are loaded without pickle.
+
+Classes map to contiguous training IDs in their declared order. Class zero is
+valid, the ignore label stays separate, and unknown IDs are errors. Manifest
+validation rejects duplicate scene IDs and paths or identical file checksums shared
+across splits. Assign each real scene to one split before producing chunks; these
+checks cannot identify the same scene re-exported as different file bytes.
+
+Preprocessing uses one finite-row mask for coordinates, features, and labels.
+It computes `floor(coords / voxel_size)` in the declared coordinate unit, averages
+voxel features, and chooses the most frequent nonignored label (smallest training
+ID for a tie). A full-length point-to-voxel mapping marks removed rows with `-1`.
+Prepared NPZ files also retain original point IDs and labels for point-level
+evaluation. `prepared.json` records the schema, reductions, mappings, and checksums.
+
+See [the dataset and prepared-artifact contract](docs/datasets.md) for the complete
+schema, PLY property mapping, numeric limits, and reconstruction rules. The raw
+dataset manifest and prepared metadata are distinct formats: select exactly one
+of `inspect --manifest` and `inspect --prepared`. Prepared validation works after
+moving the bundle and without access to the original dataset. It verifies the
+saved artifacts' internal consistency; provenance hashes do not authenticate their
+publisher or prove the transformation against unavailable raw data.
+
+## Configuration
+
+The application YAML schema is limited to paths and runtime settings. Dataset and ML
+commands take explicit command-line arguments and their separate JSON
+manifest; they do not read this YAML. Training options are recorded in the saved model bundle.
+
+```yaml
+schema_version: 1
+paths:
+  input_dir: ../data
+  output_dir: ../runs
+runtime:
+  seed: 0
+  num_workers: 0
+```
+
+See [examples/config.yaml](examples/config.yaml). In that file, `../data` resolves
+to the repository's `data` directory, regardless of the command's working directory.
+
+- `schema_version` must be integer `1`.
+- `paths.input_dir` and `paths.output_dir` are required nonempty strings. Relative
+  paths resolve against the configuration file's directory. Absolute paths remain
+  absolute; `~` is expanded. Environment variables such as `$DATA_DIR` are literal
+  text and are not expanded.
+- Input and output must resolve to different directories.
+- `runtime` and either of its fields can be omitted. `seed` defaults to `0` and
+  must be an integer from `0` through `4294967295`. `num_workers` defaults to `0`
+  and must be a nonnegative integer.
+- Unknown fields, duplicate YAML keys, and booleans used as integers are rejected.
+  YAML merge overrides that duplicate a field are also rejected.
+
+Validation checks configuration structure. It does not require datasets to exist,
+create directories, or initialize GPU libraries. Use JSON output to inspect
+resolved paths and defaults:
+
+```sh
+pcw config validate --config examples/config.yaml --json
+```
+
+Use [examples/config.yaml](examples/config.yaml) for the supported schema.
+`requirements.txt` installs the base package from this checkout; extras and
+dependency constraints are defined in `pyproject.toml`.
+
+## Development and tests
+
+For an editable install and the supported tests:
+
+```sh
+python -m pip install -r requirements-test.txt
+python -m unittest discover -s tests/unit -v
+python -m unittest discover -s tests/cli -v
+```
+
+Alternatively, use the committed uv lockfile:
+
+```sh
+uv sync --locked --extra io
+uv run --locked --extra io python -m unittest discover -s tests/unit -v
+uv run --locked --extra io python -m unittest discover -s tests/cli -v
+```
+
+The lockfile includes the optional ML dependencies. Install `.[ml]` and run
+`python -m unittest discover -s tests/ml -v` for CPU model tests. The separate
+`requirements/gpu-cu128.txt` profile pins the WarpConvNet CUDA wheel and matching
+PyTorch build.
+
+CI runs the CPU unit and CLI tests, builds a source distribution and a wheel,
+and exercises the wheel in a separate environment from outside the checkout.
+Help, diagnostics, and data-command tests prevent accidental ML imports.
+Separate CI jobs run CPU model tests and the complete CPU container workflow. See [tests/README.md](tests/README.md)
+for the independent test suites and external compatibility reference.
+
+To build locally:
+
+```sh
+python -m pip install 'build>=1.2,<2'
+python -m build
+```
+
+## Research origins
+
+<p align="center">
+  <img src="media/rptu-logo.png" alt="RPTU university logo" width="490">
+</p>
+
+These images from the original LiDAR and BIM research show columns highlighted
+in green and doors highlighted in purple. They preserve the project's research
+context; the current synthetic demo produces its own data and model outputs.
+
+<p align="center">
+  <a href="media/column.png"><img src="media/column.png" alt="Historical building point cloud with columns highlighted in green" width="392"></a>
+  <a href="media/door.png"><img src="media/door.png" alt="Historical building point cloud with doors highlighted in purple" width="392"></a>
+</p>
+
+The original research also used Open3D:
+
+<p>
+  <img src="media/o3d.png" alt="Open3D logo" width="80" height="80">
+</p>
+
+## Modernization direction
+
+1. Installable package, noninteractive CLI, and validated configuration — implemented.
+2. General dataset contracts, synthetic fixtures, and point/label alignment checks — implemented.
+3. WarpConvNet and CPU models with training, evaluation, and prediction — implemented.
+4. CPU/GPU containers, epoch checkpoints, training resume, and durable run attempts — implemented.
+5. Successor package, imports, and CLI with compatibility aliases — implemented.
+6. Develop [PointCloud Core](https://github.com/ajavanma/pointcloud-core), the separate NumPy-only library, then add a public-data recipe and spatial chunking.
+7. Add optional Helm Jobs, followed by Fleet deployment examples and measured GPU benchmarks.
+
+The new pipeline will establish its own data and model baselines. BIM export and
+multi-GPU training are future work. Start with the [repository documentation](docs/gitbook/README.md)
+for this successor. The [public RPTU baseline guide](https://rptu.gitbook.io/rptu-ai-toolkit/)
+is a separate manually published site. The
+[original research documentation](https://arash.gitbook.io/rptu-ai-toolkit/) remains
+historical and does not describe the current package installation or CLI.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
+
+For development and reporting issues, see [contributing](CONTRIBUTING.md) and
+the [security policy](SECURITY.md). The [public readiness review](docs/public-readiness.md)
+records the remaining launch decisions; the repository is currently private.

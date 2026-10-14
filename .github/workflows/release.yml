@@ -1,0 +1,86 @@
+name: Publish Python package
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pypi-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Require the public project and a release tag
+        env:
+          PROJECT: ${{ github.repository }}
+          PRIVATE: ${{ github.event.repository.private }}
+        run: |
+          test "$PROJECT" = ajavanma/PointCloud-Workflows
+          test "$PRIVATE" = false
+          case "$GITHUB_REF" in refs/tags/v*) ;; *) echo 'Select a v<version> tag.' >&2; exit 1 ;; esac
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: '3.11'
+      - name: Check the release version and main ancestry
+        run: |
+          git fetch --no-tags origin main:refs/remotes/origin/main
+          git merge-base --is-ancestor HEAD origin/main
+          python -m pip install 'build>=1.2,<2' 'twine>=6,<7'
+          python - <<'PY'
+          import os
+          import runpy
+          from packaging.version import Version
+          version = runpy.run_path('src/pointcloud_workflows/_version.py')['__version__']
+          parsed = Version(version)
+          if parsed.is_devrelease or parsed.local or os.environ['GITHUB_REF'] != 'refs/tags/v' + version:
+              raise SystemExit('Tag must exactly match a non-development package version.')
+          PY
+      - name: Build and inspect both distributions
+        run: |
+          python -m build
+          python -m twine check --strict dist/*
+      - name: Test the built wheel outside the checkout
+        run: |
+          python -m venv "$RUNNER_TEMP/release-wheel"
+          for wheel in dist/*.whl; do "$RUNNER_TEMP/release-wheel/bin/python" -m pip install "${wheel}[io]"; done
+          torch_requirement=$(python -c "import tomllib; print(next(item for item in tomllib.load(open('pyproject.toml', 'rb'))['project']['optional-dependencies']['ml'] if item.startswith('torch==')))")
+          "$RUNNER_TEMP/release-wheel/bin/python" -m pip install "$torch_requirement" --index-url https://download.pytorch.org/whl/cpu
+          "$RUNNER_TEMP/release-wheel/bin/python" -m pip install 'safetensors[torch]==0.7.0'
+          "$RUNNER_TEMP/release-wheel/bin/python" -m pip check
+          cd "$RUNNER_TEMP"
+          for suite in unit cli ml; do
+            "$RUNNER_TEMP/release-wheel/bin/python" -m unittest discover -s "$GITHUB_WORKSPACE/tests/$suite" -v
+          done
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: python-distributions-${{ github.sha }}
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    needs: build
+    runs-on: ubuntu-24.04
+    environment:
+      name: pypi
+      url: https://pypi.org/project/pointcloud-workflows/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: python-distributions-${{ github.sha }}
+          path: dist/
+      - name: Publish through the configured PyPI Trusted Publisher
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # release/v1
+        with:
+          attestations: true

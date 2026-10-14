@@ -1,0 +1,65 @@
+name: Publish documentation
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Require the public project and a release tag
+        env:
+          PROJECT: ${{ github.repository }}
+          PRIVATE: ${{ github.event.repository.private }}
+        run: |
+          test "$PROJECT" = ajavanma/PointCloud-Workflows
+          test "$PRIVATE" = false
+          case "$GITHUB_REF" in refs/tags/v*) ;; *) echo 'Select a v<version> tag.' >&2; exit 1 ;; esac
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: '3.11'
+      - name: Check the release version and main ancestry
+        run: |
+          git fetch --no-tags origin main:refs/remotes/origin/main
+          git merge-base --is-ancestor HEAD origin/main
+          python -m pip install -r requirements/docs.txt
+          python - <<'PY'
+          import os
+          import runpy
+          from packaging.version import Version
+          version = runpy.run_path('src/pointcloud_workflows/_version.py')['__version__']
+          parsed = Version(version)
+          if parsed.is_devrelease or parsed.local or os.environ['GITHUB_REF'] != 'refs/tags/v' + version:
+              raise SystemExit('Tag must exactly match a non-development package version.')
+          PY
+      - name: Build documentation with strict link checks
+        run: python -m mkdocs build --strict
+      - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
+        with:
+          path: site/
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-24.04
+    environment:
+      name: docs
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - name: Deploy the reviewed documentation artifact
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4

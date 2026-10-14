@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pointcloud-workflows"
+dynamic = ["version"]
+description = "PointCloud Workflows: point-cloud segmentation with NVIDIA GPUs and a CPU fallback"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{name = "Arash Javanmardi"}]
+dependencies = ["PyYAML>=6.0.1,<7", "numpy>=1.26,<3"]
+
+[project.optional-dependencies]
+io = ["plyfile>=1.1,<2"]
+ml = ["torch==2.13.0", "safetensors[torch]==0.7.0"]
+
+[project.scripts]
+pcw = "pointcloud_workflows.cli:main"
+rptu = "pointcloud_workflows.cli:main"
+
+[project.urls]
+Repository = "https://github.com/ajavanma/PointCloud-Workflows"
+Issues = "https://github.com/ajavanma/PointCloud-Workflows/issues"
+
+[dependency-groups]
+dev = ["build>=1.2,<2"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["pointcloud_workflows*", "rptu_ai_toolkit*"]
+namespaces = false
+
+[tool.setuptools.dynamic]
+version = {attr = "pointcloud_workflows._version.__version__"}

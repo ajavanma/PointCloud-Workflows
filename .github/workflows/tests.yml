@@ -1,0 +1,102 @@
+name: Package and CPU workflow tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12']
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install package and test dependencies
+        run: python -m pip install -r requirements-test.txt 'build>=1.2,<2'
+
+      - name: Run CPU unit tests
+        run: python -m unittest discover -s tests/unit -v
+
+      - name: Run CLI acceptance tests
+        run: python -m unittest discover -s tests/cli -v
+
+      - name: Build documentation with strict link checks
+        if: matrix.python-version == '3.11'
+        run: |
+          python -m pip install -r requirements/docs.txt
+          python -m mkdocs build --strict
+
+      - name: Build source distribution and wheel
+        run: python -m build
+
+      - name: Test wheel in a clean environment outside the checkout
+        run: |
+          python -m venv "$RUNNER_TEMP/pcw-wheel"
+          "$RUNNER_TEMP/pcw-wheel/bin/python" -m pip install dist/*.whl
+          cd "$RUNNER_TEMP"
+          "$RUNNER_TEMP/pcw-wheel/bin/python" -m unittest discover -s "$GITHUB_WORKSPACE/tests/cli" -v
+          "$RUNNER_TEMP/pcw-wheel/bin/pcw" doctor --json
+          "$RUNNER_TEMP/pcw-wheel/bin/rptu" doctor --json
+
+  ml-tests:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12']
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install CPU model dependencies
+        run: |
+          python -m pip install 'torch==2.13.0' --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install '.[ml]'
+          python -m pip check
+      - name: Exercise the CPU fallback and model artifacts
+        run: python -m unittest discover -s tests/ml -v
+      - name: Fetch the immutable external compatibility reference
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: ajavanma/RPTU_AI_Toolkit
+          ref: 73319745a0aacb410401df71ec890a1cecc00cf8
+          path: .compat-rptu
+          persist-credentials: false
+      - name: Verify artifact compatibility without inherited history
+        env:
+          PCW_LEGACY_SOURCE: ${{ github.workspace }}/.compat-rptu
+        run: python -m unittest discover -s tests/compat -p test_legacy_artifacts.py -v
+      - name: Prepare the previous CPU runtime
+        if: matrix.python-version == '3.11'
+        run: |
+          python -m venv "$RUNNER_TEMP/pcw-torch210"
+          "$RUNNER_TEMP/pcw-torch210/bin/python" -m pip install 'torch==2.10.0' --index-url https://download.pytorch.org/whl/cpu
+          "$RUNNER_TEMP/pcw-torch210/bin/python" -m pip install 'numpy>=1.26,<3' 'PyYAML>=6.0.1,<7' 'safetensors[torch]==0.7.0'
+      - name: Check actual runtime upgrade compatibility
+        if: matrix.python-version == '3.11'
+        env:
+          PCW_LEGACY_SOURCE: ${{ github.workspace }}/.compat-rptu
+          PCW_LEGACY_PYTHON: ${{ runner.temp }}/pcw-torch210/bin/python
+        run: python -m unittest discover -s tests/compat -p test_runtime_upgrade.py -v
+
+  cpu-container:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Build the CPU image
+        run: docker build --target cpu --tag pointcloud-workflows:cpu .
+      - name: Exercise container mounts and the complete workflow
+        run: sh scripts/container-smoke.sh pointcloud-workflows:cpu

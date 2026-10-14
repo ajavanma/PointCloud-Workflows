@@ -1,0 +1,56 @@
+# Configuration
+
+Application configuration uses YAML schema version `1`. It currently covers only
+paths and runtime defaults. Dataset and ML commands take explicit CLI arguments and a
+separate JSON [dataset manifest](dataset-contract.md); they do not read this YAML.
+
+The repository's `examples/config.yaml` contains:
+
+```yaml
+schema_version: 1
+paths:
+  input_dir: ../data
+  output_dir: ../runs
+runtime:
+  seed: 0
+  num_workers: 0
+```
+
+Validate it from the repository root:
+
+```sh
+pcw config validate --config examples/config.yaml
+pcw config validate --config examples/config.yaml --json
+```
+
+Relative paths resolve against the configuration file's directory, regardless of
+the working directory. Here `../data` resolves to the repository's `data` directory.
+Validation shows resolved paths but does not require those directories to exist
+or create them.
+
+## Rules
+
+- `schema_version` must be integer `1`.
+- `paths.input_dir` and `paths.output_dir` are required nonempty strings. Their
+  resolved directories must differ.
+- Absolute paths stay absolute and `~` expands to the home directory. Environment
+  variable text such as `$DATA_DIR` stays literal; it is not expanded.
+- `runtime` and either field may be omitted. `seed` and `num_workers` then default
+  to `0`.
+- `seed` must be an integer from `0` through `4294967295`.
+- `num_workers` must be a nonnegative integer.
+- Unknown fields, duplicate YAML keys, and booleans used as integers are rejected.
+  YAML merge overrides that duplicate a field are also rejected.
+
+Configuration validation does not initialize a model or check GPU availability.
+Model settings use `train` CLI arguments and are recorded in the run specification
+and final model bundle. `train --resume` restores omitted options from the run;
+explicit options must match. The prepared manifest checksum, model architecture,
+and runtime compatibility are checked before continuing. See the
+[training guide](train.md).
+
+## Installation configuration
+
+Use `examples/config.yaml` for the supported schema. `requirements.txt` installs
+the base package from the checkout; extras and dependency constraints are in
+`pyproject.toml`. Research configuration and scripts are not shipped in PCW.

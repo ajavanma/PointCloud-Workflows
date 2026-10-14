@@ -84,7 +84,7 @@ protection. See the [release guide](releasing.md) for the reproducible setup.
 | Python package | PyPI `pointcloud-workflows` | Prepared, not published; configure Trusted Publisher |
 | Documentation | GitHub Pages `https://ajavanma.github.io/PointCloud-Workflows/` | Prepared, not deployed |
 | Future container images | `ghcr.io/ajavanma/pointcloud-workflows` | Selected; no image publishing workflow yet |
-| Numerical library | Separate `ajavanma/pointcloud-core`, PyPI `pointcloud-core` | Public source; first `0.1.0` release prepared, not published; no PCW dependency yet |
+| Numerical library | Separate `ajavanma/pointcloud-core`, PyPI `pointcloud-core` | Public source; first `0.1.0` release prepared, not published; PCW uses an immutable source pin |
 
 Use [release instructions](releasing.md) and the manual workflows. PyPI releases
 use short-lived OIDC through a repository/workflow-specific Trusted Publisher and
@@ -93,7 +93,11 @@ environment. Neither workflow publishes from an unreviewed PR or private repo.
 A source-distribution or wheel build alone does not reserve the package name.
 
 PCW remains `0.2.0.dev0`. PointCloud Core release preparation targets `0.1.0`
-and keeps its package independent of PyTorch and PCW. Before either package is
+and keeps its package independent of PyTorch and PCW. The
+[Core integration](core-integration.md) uses a hash-checked source archive until
+that release is published. Replace it with a tested package-index dependency
+before publishing PCW; the release workflow rejects direct URL dependencies.
+Before either package is
 published, configure its provider-side Trusted Publisher, review the exact
 release files, and complete the protected manual release workflow. Repository
 visibility does not reserve a PyPI name or upload a distribution. No known GPU

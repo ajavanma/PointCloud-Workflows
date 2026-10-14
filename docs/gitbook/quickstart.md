@@ -40,7 +40,9 @@ python -m pip install '.[ml]'
 ```
 
 On macOS, use `python -m pip install '.[ml]'`. For data preparation alone,
-`python -m pip install .` installs only NumPy and PyYAML. ASCII and binary PLY
+`python -m pip install .` installs NumPy, PyYAML, and PointCloud Core. Core is
+fetched from a hash-checked immutable `0.1.0` source revision until its first PyPI
+release; see [Core integration](../core-integration.md). ASCII and binary PLY
 input is available with `python -m pip install '.[io]'`.
 
 ## Prepare the demonstration data

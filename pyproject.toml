@@ -11,7 +11,12 @@ requires-python = ">=3.11"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{name = "Arash Javanmardi"}]
-dependencies = ["PyYAML>=6.0.1,<7", "numpy>=1.26,<3"]
+dependencies = [
+    "PyYAML>=6.0.1,<7",
+    "numpy>=1.26.4,<3",
+    # Replace with the tested PyPI version before publishing PCW.
+    "pointcloud-core @ https://github.com/ajavanma/pointcloud-core/archive/5c28a700c30aee6186cfe30f6cd74708289f0743.tar.gz#sha256=060ee954fabda420d57bc22138f6c62d5946f11e7f076c1e69c863139c52c355",
+]
 
 [project.optional-dependencies]
 io = ["plyfile>=1.1,<2"]

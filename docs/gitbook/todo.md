@@ -13,6 +13,8 @@
 - Separate CPU and GPU container targets with explicit input, output, and cache mounts.
 - The `pointcloud-workflows` distribution, `pointcloud_workflows` imports, and
   `pcw` CLI, with old command/import aliases and preserved artifact formats.
+- PointCloud Core integration with compatibility tests and a standalone array
+  example, using an immutable source revision until Core's first PyPI release.
 
 Use the [GPU and CPU quickstart](quickstart.md) for a complete run.
 
@@ -22,9 +24,9 @@ Use the [GPU and CPU quickstart](quickstart.md) for a complete run.
    [PointCloud Core library](https://github.com/ajavanma/pointcloud-core). Its
    source and release preparation are public; PyPI publication remains a separate
    release step.
-2. Test a versioned PointCloud Core integration against PCW fixtures, preserving
-   dataset and artifact contracts, then add a public-data recipe and spatial
-   chunking for larger scenes.
+2. Replace the transitional Core source dependency with its published package
+   version, rerun compatibility tests, and retain existing artifact contracts.
+   Add a public-data recipe and spatial chunking for larger scenes.
 3. Prepare versioned package and image releases with schema compatibility guidance.
 4. Package explicit batch runs as Helm Jobs with preserved dataset and result storage.
 5. Add optional Rancher Fleet examples for existing cluster operators.

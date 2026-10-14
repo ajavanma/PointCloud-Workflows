@@ -2,6 +2,11 @@
 
 ## Unreleased — PointCloud Workflows
 
+- Make PCW and PointCloud Core source repositories public with protected main
+  branches, private vulnerability reporting, secret scanning, and push protection.
+- Document PointCloud Core 0.1.0 release preparation and the later versioned
+  integration; keep PCW at 0.2.0.dev0 and package/site publication separate.
+
 - Start a fresh project history without research code, old branches, logs, or
   historical commit metadata; preserve the MIT license and approved pictures.
 - Upgrade the default CPU ML runtime to PyTorch 2.13.0. Keep the GPU binary

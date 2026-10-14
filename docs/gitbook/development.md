@@ -4,7 +4,7 @@ The ordinary unit, CLI, and ML suites need only this checkout. Additional
 cross-version suites use a separately pinned public source and an optional old
 interpreter. See [fixture provenance](https://github.com/ajavanma/PointCloud-Workflows/blob/main/tests/compat/README.md).
 
-With access to the private repository, clone the [source repository](https://github.com/ajavanma/PointCloud-Workflows) and create
+Clone the public [source repository](https://github.com/ajavanma/PointCloud-Workflows) and create
 a Python 3.11 or newer virtual environment using the [quickstart](quickstart.md).
 Python 3.11 and 3.12 are covered by the CPU test matrix.
 

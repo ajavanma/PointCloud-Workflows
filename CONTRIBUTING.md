@@ -1,9 +1,9 @@
 # Contributing to PointCloud Workflows
 
 PointCloud Workflows is an independent project derived from RPTU AI Toolkit.
-The current repository is private while its interfaces and publication details
-are prepared. See [project lineage](docs/project-lineage.md) and the
-[public-readiness record](docs/public-readiness.md) for the transition status.
+The source repository is public. See [project lineage](docs/project-lineage.md)
+and the [public-release record](docs/public-readiness.md) for provenance,
+repository protections, and package-release status.
 
 For a substantial change, describe the problem and proposed behavior in an
 issue before implementation. Keep pull requests focused, include a small
@@ -65,10 +65,14 @@ benchmark results.
 
 ## Pull requests and releases
 
+Use short commit and PR titles. Put detailed context in the PR description;
+squash commits use the PR title only.
+
 Run the checks relevant to the behavior being changed and keep documentation
 examples aligned with the CLI. CI also checks installed wheels outside the source
 checkout and exercises the CPU container workflow. Wait for the checks on the
-actual PR head before merging.
+actual PR head before merging. The protected `main` branch requires pull requests
+and passing CPU CI checks, including for the maintainer.
 
 Research history stays in the original RPTU repository. This project has fresh
 history and no research branches. Keep the MIT license and existing attribution
@@ -76,6 +80,6 @@ notices when reusing code. New contributions are made under
 the repository's [MIT license](LICENSE); identify any third-party material and
 its applicable terms in the pull request.
 
-Publishing a package, image, documentation site, or changing repository visibility
-requires an explicit release decision. No package index or container registry
-publication is configured by the rename itself.
+Publishing a package, image, or documentation site requires a release decision
+separate from making the source public. See the [release guide](docs/releasing.md)
+for the manual workflows, protected environments, and registry setup.

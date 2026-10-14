@@ -2,7 +2,7 @@
 
 PointCloud Workflows is a GPU-first point-cloud segmentation toolkit for NVIDIA RTX 4070 systems, with a portable CPU fallback. It combines synthetic data generation, dataset validation, voxel preprocessing, training, evaluation, and prediction. The project originated in LiDAR segmentation and BIM research and provides reusable public dataset contracts and reproducible workflows.
 
-This is the documentation source for the private PointCloud Workflows successor.
+This is the documentation source for the public PointCloud Workflows successor.
 It derives from RPTU AI Toolkit and starts with clean project history. Install the
 `pointcloud-workflows` distribution from this checkout and use `pcw` or
 `python -m pointcloud_workflows`. The old commands/imports remain aliases;

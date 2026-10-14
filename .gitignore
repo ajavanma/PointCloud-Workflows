@@ -1,0 +1,51 @@
+# Folders
+models/
+lightning_logs/
+logs/
+
+# Sensitive data
+.env
+.env.*
+!.env.example
+
+# macOS system files
+.DS_Store
+
+# Thumbnails
+._*
+
+# Files that might appear on external disks
+.Trashes
+
+# VSCode files
+.vscode/
+*.code-workspace
+venv/
+.venv/
+.idea/
+
+# Build output
+build/
+dist/
+*.egg-info/
+*.app
+*.ipa
+*.dmg
+
+# Project specific
+runs/
+*.ply
+*.pcd
+
+# python and jupyter notebook files
+__pycache__/
+.ipynb_checkpoints/
+
+# lock files
+poetry.lock
+
+# External source used only by explicit compatibility tests
+.compat-rptu/
+
+# Generated documentation
+site/

@@ -47,6 +47,7 @@ def main():
         ("PATCH", BASE, security),
         ("PUT", f"{BASE}/vulnerability-alerts", None),
         ("PUT", f"{BASE}/private-vulnerability-reporting", None),
+        ("PUT", f"{BASE}/actions/permissions/fork-pr-contributor-approval", {"approval_policy": "all_external_contributors"}),
     ]
     if not arguments.apply:
         print(json.dumps({"repository": REPOSITORY, "mode": "preview", "operations": [
@@ -85,7 +86,9 @@ def main():
     api("GET", f"{BASE}/vulnerability-alerts")
     if api("GET", f"{BASE}/private-vulnerability-reporting").get("enabled") is not True:
         raise RuntimeError("Private vulnerability reporting verification failed")
-    print("Verified branch protection, secret scanning, push protection, dependency alerts, and private reporting.")
+    if api("GET", f"{BASE}/actions/permissions/fork-pr-contributor-approval").get("approval_policy") != "all_external_contributors":
+        raise RuntimeError("External contributor workflow approval verification failed")
+    print("Verified branch protection, secret scanning, push protection, dependency alerts, private reporting, and contributor workflow approvals.")
 
 
 if __name__ == "__main__":

@@ -47,7 +47,9 @@ recorded runtime. Do not rewrite checkpoint metadata to bypass this rule.
   permits. Verify controls after activation instead of assuming files enable them.
 
 The current account's private-repository plan does not support enforced branch
-protection or Pages. A plan upgrade or an explicitly requested public visibility
+protection or Pages. Attempts to enable secret scanning, private vulnerability
+reporting, external-contributor workflow approvals, and required environment
+reviewers also returned eligibility errors. These controls are pending. A plan upgrade or an explicitly requested public visibility
 change is needed for those controls. This preparation does not change visibility
 or buy an account plan. GitHub documents the
 [branch protection eligibility](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches)

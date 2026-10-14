@@ -45,6 +45,11 @@ source hashes are not proof of provenance.
 The [dataset contract](dataset-contract.md) specifies numeric types, feature and
 label reduction, invalid-row markers, and reconstruction rules.
 
+The array operations use PointCloud Core through a PCW compatibility adapter.
+PCW preserves the existing feature-mean reduction, validation errors, and artifact
+schemas. See [Core integration](../core-integration.md) for the boundary and an
+example that runs independently of the workflow commands.
+
 Earlier documentation described PCD files paired with ASC labels, normalization,
 nearest-neighbor labeling, and pickle output. Those research formats and behaviors
 are not the current command's contract. A future adapter must establish point

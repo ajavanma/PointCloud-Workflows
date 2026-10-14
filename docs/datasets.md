@@ -142,12 +142,18 @@ arithmetic mean of its retained points. Its label is the most frequent
 nonignored training ID; a tie chooses the smallest training ID. An ignored-only
 voxel keeps label `-1`. A prediction sample stays unlabeled.
 
+PCW uses PointCloud Core for voxel grouping and labels while retaining its
+existing divide-each-contribution-before-summing feature reduction. Direct Core
+callers use its scaled-mean reduction, which may differ in floating-point edge
+cases. The [integration guide](core-integration.md) explains this compatibility
+boundary; no schema or artifact conversion is required.
+
 Prepared data retain a `point_to_voxel` entry for every original source row, and
 the complete original `point_indices` array. `point_to_voxel[i]` selects that
 row's voxel; `-1` marks a removed nonfinite row. Always mask out `-1` before
 indexing predictions, because NumPy would otherwise select the final voxel.
-This mapping supports restoring outputs to source order and explicitly marking
-invalid points when prediction is implemented.
+Prediction uses Core's safe lifting operation to restore outputs to source order
+and fill invalid rows without interpreting `-1` as the final voxel.
 
 ## Prepared artifacts
 

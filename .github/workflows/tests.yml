@@ -45,9 +45,18 @@ jobs:
           python -m venv "$RUNNER_TEMP/pcw-wheel"
           "$RUNNER_TEMP/pcw-wheel/bin/python" -m pip install dist/*.whl
           cd "$RUNNER_TEMP"
+          "$RUNNER_TEMP/pcw-wheel/bin/python" -m unittest discover -s "$GITHUB_WORKSPACE/tests/unit" -p test_core_integration.py -v
           "$RUNNER_TEMP/pcw-wheel/bin/python" -m unittest discover -s "$GITHUB_WORKSPACE/tests/cli" -v
           "$RUNNER_TEMP/pcw-wheel/bin/pcw" doctor --json
           "$RUNNER_TEMP/pcw-wheel/bin/rptu" doctor --json
+
+      - name: Run the standalone example with only Core installed
+        run: |
+          core_requirement=$(python -c "import tomllib; from packaging.requirements import Requirement; print(next(item for item in tomllib.load(open('pyproject.toml', 'rb'))['project']['dependencies'] if Requirement(item).name == 'pointcloud-core'))")
+          python -m venv "$RUNNER_TEMP/core-example"
+          "$RUNNER_TEMP/core-example/bin/python" -m pip install "$core_requirement"
+          cd "$RUNNER_TEMP"
+          "$RUNNER_TEMP/core-example/bin/python" "$GITHUB_WORKSPACE/examples/core_roundtrip.py"
 
   ml-tests:
     runs-on: ubuntu-22.04

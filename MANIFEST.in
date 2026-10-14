@@ -1,4 +1,5 @@
 include examples/config.yaml
+include examples/core_roundtrip.py
 include requirements.txt requirements-test.txt uv.lock
 include tests/README.md
 include CONTRIBUTING.md SECURITY.md CHANGELOG.md

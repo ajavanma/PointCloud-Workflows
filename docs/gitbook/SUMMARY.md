@@ -4,6 +4,7 @@
 * [GPU and CPU quickstart](quickstart.md)
 * [CLI reference](cli-reference.md)
 * [Dataset contract](dataset-contract.md)
+* [PointCloud Core integration](../core-integration.md)
 * [Configuration](configuration.md)
 * [Development and tests](development.md)
 * [Preprocess](preprocess.md)

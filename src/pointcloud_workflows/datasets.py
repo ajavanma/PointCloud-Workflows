@@ -10,6 +10,7 @@ from typing import Any
 import zipfile
 
 import numpy as np
+import pointcloud_core as core
 
 
 class DatasetError(ValueError):
@@ -50,26 +51,22 @@ class DatasetManifest:
     def encode_labels(self, labels: np.ndarray) -> np.ndarray:
         """Map dataset IDs to contiguous IDs in declared class order; ignore is -1."""
         values = _integer_array(labels, "labels")
-        result = np.full(values.shape, -1, dtype=np.int64)
-        known = values == self.ignore_label
-        for training_id, label_class in enumerate(self.classes):
-            selected = values == label_class.id
-            result[selected] = training_id
-            known |= selected
-        if not np.all(known):
-            unknown = np.unique(values[~known]).tolist()
-            raise DatasetError(f"labels: unknown dataset class IDs: {unknown}")
-        return result
+        try:
+            return core.LabelMap(
+                tuple(entry.id for entry in self.classes), self.ignore_label
+            ).encode(values)
+        except core.PointCloudError as error:
+            raise DatasetError(str(error).replace("unknown class IDs", "unknown dataset class IDs")) from error
 
     def decode_labels(self, labels: np.ndarray) -> np.ndarray:
         """Restore dataset IDs, including the dataset's ignore label."""
         values = _integer_array(labels, "training labels")
-        if np.any((values < -1) | (values >= len(self.classes))):
-            raise DatasetError("training labels: expected -1 or a declared training class ID")
-        result = np.full(values.shape, self.ignore_label, dtype=np.int64)
-        for training_id, label_class in enumerate(self.classes):
-            result[values == training_id] = label_class.id
-        return result
+        try:
+            return core.LabelMap(
+                tuple(entry.id for entry in self.classes), self.ignore_label
+            ).decode(values)
+        except core.PointCloudError as error:
+            raise DatasetError(str(error).replace("encoded", "training")) from error
 
 
 def sha256_file(path: str | Path) -> str:
@@ -288,6 +285,8 @@ def validate_sample(sample: Sample, feature_count: int) -> Sample:
     """Normalize array types without filtering or reordering any source rows."""
     if type(feature_count) is not int or feature_count < 1:
         raise DatasetError("feature_count: expected a positive integer")
+    # Keep schema-v1 coercion and required feature widths at the dataset edge.
+    # Core also serves featureless clouds and owns its normalized output arrays.
     coords = _real_array(sample.coords, "coords")
     features = _real_array(sample.features, "features")
     if coords.ndim != 2 or coords.shape[1] != 3:
@@ -297,20 +296,21 @@ def validate_sample(sample: Sample, feature_count: int) -> Sample:
         raise DatasetError("coords: empty scenes are not supported")
     if features.shape != (count, feature_count):
         raise DatasetError(f"features: expected shape [{count},{feature_count}]")
-    labels = None
-    if sample.labels is not None:
-        labels = _integer_array(sample.labels, "labels")
-        if labels.shape != (count,):
-            raise DatasetError(f"labels: expected shape [{count}]")
-    indices = _integer_array(sample.point_indices, "point_indices")
-    if indices.shape != (count,):
-        raise DatasetError(f"point_indices: expected shape [{count}]")
-    if np.any(indices < 0) or len(np.unique(indices)) != count:
-        raise DatasetError("point_indices: expected unique nonnegative original point IDs")
-    valid = np.all(np.isfinite(coords), axis=1) & np.all(np.isfinite(features), axis=1)
-    if not np.any(valid):
-        raise DatasetError("scene has no rows with finite coordinates and features")
-    return Sample(coords, features, labels, indices)
+    try:
+        cloud = core.validate_cloud(core.PointCloud(
+            coords, features, sample.labels,
+            # Unlike Core, Sample requires explicit IDs; readers supply defaults.
+            np.asarray(None) if sample.point_indices is None else sample.point_indices,
+        ))
+    except core.PointCloudError as error:
+        message = str(error).replace("(not booleans)", "(booleans are not accepted)")
+        message = message.replace("shape [N] aligned with coords", f"shape [{count}]")
+        message = message.replace(
+            "cloud: no rows have finite coordinates and features",
+            "scene has no rows with finite coordinates and features",
+        )
+        raise DatasetError(message) from error
+    return Sample(cloud.coords, cloud.features, cloud.labels, cloud.point_indices)
 
 
 def load_scene(manifest: DatasetManifest, scene: Scene) -> Sample:

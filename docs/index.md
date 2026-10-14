@@ -13,6 +13,7 @@ documentation destinations and the checks required before publishing.
 
 PointCloud Workflows and the separate NumPy-only
 [PointCloud Core library](https://github.com/ajavanma/pointcloud-core) have public
-source repositories. Core `0.1.0` release preparation covers validation,
-voxelization, and original-point mappings. PCW currently keeps its own
-implementation; a tested versioned library integration follows publication.
+source repositories. PCW uses Core for array validation, voxelization, and
+original-point mappings through a compatibility adapter. The current dependency
+pins the prepared Core `0.1.0` source; PyPI publication remains a separate step.
+See [Core integration and the standalone example](core-integration.md).

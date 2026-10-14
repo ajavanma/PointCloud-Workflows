@@ -16,6 +16,7 @@ import shutil
 import uuid
 
 import numpy as np
+import pointcloud_core as core
 
 from . import __version__
 from .artifacts import new_output_directory, write_json, write_npz
@@ -161,21 +162,22 @@ def _runtime(device, backend, torch):
 
 def _point_predictions(sample, voxel_predictions, dataset):
     valid = sample.point_to_voxel >= 0
-    train_labels = np.full(len(valid), -1, dtype=np.int64)
-    train_labels[valid] = voxel_predictions[sample.point_to_voxel[valid]]
-    inverse = np.asarray([entry.id for entry in dataset.classes], dtype=np.int64)
-    labels = np.full(len(valid), dataset.ignore_label, dtype=np.int64)
-    labels[valid] = inverse[train_labels[valid]]
+    try:
+        train_labels = core.lift_voxel_values(
+            np.asarray(voxel_predictions, dtype=np.int64), sample.point_to_voxel,
+        )
+        label_map = core.LabelMap(tuple(entry.id for entry in dataset.classes), dataset.ignore_label)
+        labels = label_map.decode(train_labels)
+        targets = None if sample.point_labels is None else label_map.decode(sample.point_labels)
+    except core.PointCloudError as error:
+        raise MLRuntimeError(str(error)) from error
     arrays = {
         "point_rows": np.arange(len(valid), dtype=np.int64),
         "point_indices": sample.point_indices,
         "labels": labels,
         "valid_mask": valid,
     }
-    if sample.point_labels is not None:
-        targets = np.full(len(valid), dataset.ignore_label, dtype=np.int64)
-        target_valid = sample.point_labels >= 0
-        targets[target_valid] = inverse[sample.point_labels[target_valid]]
+    if targets is not None:
         arrays["target_labels"] = targets
     return arrays, train_labels
 

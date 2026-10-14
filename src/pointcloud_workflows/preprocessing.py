@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from numbers import Real
 
 import numpy as np
+import pointcloud_core as core
 
 from .datasets import DatasetError, DatasetManifest, Sample, validate_sample
 
@@ -52,52 +53,35 @@ def voxelize(
     training_labels = (
         None if sample.labels is None else manifest.encode_labels(sample.labels)
     )
-    finite = np.isfinite(sample.coords).all(axis=1) & np.isfinite(sample.features).all(axis=1)
-    if not np.any(finite):
-        raise DatasetError("sample: no points have finite coordinates and features")
+    try:
+        cloud = core.voxelize(core.PointCloud(
+            sample.coords, sample.features, training_labels, sample.point_indices,
+        ), size)
+    except core.PointCloudError as error:
+        raise DatasetError(str(error)) from error
 
-    # The upper bound is exclusive: converting int64.max to float64 rounds up
-    # to 2**63, which would otherwise allow an out-of-range value to be cast.
-    with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
-        quantized = np.floor(sample.coords[finite] / size)
-    if (
-        not np.isfinite(quantized).all()
-        or np.any(quantized < -(2**63))
-        or np.any(quantized >= 2**63)
-    ):
-        raise DatasetError("voxel coordinates: quantized values exceed the int64 range")
-    voxel_coords, inverse, counts = np.unique(
-        quantized.astype(np.int64), axis=0, return_inverse=True, return_counts=True
+    features = _schema_v1_features(sample.features, cloud.point_to_voxel, len(cloud.voxel_coords))
+    return PreparedSample(
+        cloud.voxel_coords, features, cloud.labels, cloud.point_to_voxel, cloud.point_indices
     )
-    inverse = inverse.reshape(-1)
 
-    # Dividing first avoids overflowing the sum of large, finite features when
-    # the mean is representable. Still reject numerical overflow explicitly.
-    features = np.zeros((len(voxel_coords), len(manifest.feature_names)), dtype=np.float64)
+
+def _schema_v1_features(
+    source: np.ndarray, point_to_voxel: np.ndarray, voxel_count: int
+) -> np.ndarray:
+    """Retain exact schema-v1 means for prepared artifacts and checkpoint resume.
+
+    Core uses a scaled mean that preserves subnormal values, but can round
+    differently from PCW's historical divide-before-sum operation. Keep that
+    operation until an explicit artifact migration; grouping and the shared
+    exclusion mask come exclusively from Core's returned point mapping.
+    """
+    included = point_to_voxel >= 0
+    inverse = point_to_voxel[included]
+    counts = np.bincount(inverse, minlength=voxel_count)
+    features = np.zeros((voxel_count, source.shape[1]), dtype=np.float64)
     with np.errstate(over="ignore", invalid="ignore"):
-        np.add.at(features, inverse, sample.features[finite] / counts[inverse, None])
+        np.add.at(features, inverse, source[included] / counts[inverse, None])
     if not np.isfinite(features).all():
         raise DatasetError("features: voxel feature mean is not finite")
-
-    labels = None
-    if training_labels is not None:
-        labels = np.full(len(voxel_coords), -1, dtype=np.int64)
-        valid_labels = training_labels[finite]
-        included = valid_labels != -1
-        if np.any(included):
-            pairs, frequencies = np.unique(
-                np.column_stack((inverse[included], valid_labels[included])),
-                axis=0,
-                return_counts=True,
-            )
-            order = np.lexsort((pairs[:, 1], -frequencies, pairs[:, 0]))
-            ranked = pairs[order]
-            first = np.r_[True, ranked[1:, 0] != ranked[:-1, 0]]
-            winners = ranked[first]
-            labels[winners[:, 0]] = winners[:, 1]
-
-    point_to_voxel = np.full(len(sample.coords), -1, dtype=np.int64)
-    point_to_voxel[finite] = inverse
-    return PreparedSample(
-        voxel_coords, features, labels, point_to_voxel, sample.point_indices.copy()
-    )
+    return features

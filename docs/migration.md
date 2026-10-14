@@ -66,6 +66,11 @@ use these format identifiers. They describe the file format, not the product nam
 No conversion step is required. Do not search-and-replace strings inside bundles:
 saved metadata and weights are protected by checksums.
 
+The [PointCloud Core integration](core-integration.md) preserves these schemas,
+PCW validation errors, and the established feature-mean reduction. Installation
+now fetches an immutable, hash-checked Core `0.1.0` source revision while its PyPI
+release is prepared. This does not relax runtime checks for resumed training.
+
 The package is currently `0.2.0.dev0`. The default CPU ML runtime is now PyTorch
 2.13.0; the separate GPU binary profile still uses 2.10.0. Existing resume
 checks still require the saved toolkit, PyTorch, CUDA and WarpConvNet versions,

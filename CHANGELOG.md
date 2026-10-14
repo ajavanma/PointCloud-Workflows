@@ -2,10 +2,17 @@
 
 ## Unreleased — PointCloud Workflows
 
+- Use PointCloud Core for array validation, label mapping, voxel grouping, and
+  original-row lifting through a compatibility adapter. Preserve PCW error
+  behavior, feature reduction, artifact schemas, and resume requirements.
+- Pin Core's prepared 0.1.0 source revision and archive hash until PyPI
+  publication; block PCW package publication while a direct source dependency remains.
+- Add compatibility tests and an independent NumPy/Core example with sparse
+  point IDs, ignored labels, and invalid coordinate/feature rows.
 - Make PCW and PointCloud Core source repositories public with protected main
   branches, private vulnerability reporting, secret scanning, and push protection.
-- Document PointCloud Core 0.1.0 release preparation and the later versioned
-  integration; keep PCW at 0.2.0.dev0 and package/site publication separate.
+- Document PointCloud Core 0.1.0 release preparation; keep PCW at 0.2.0.dev0 and
+  package/site publication separate.
 
 - Start a fresh project history without research code, old branches, logs, or
   historical commit metadata; preserve the MIT license and approved pictures.

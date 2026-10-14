@@ -1,8 +1,9 @@
 # Development and tests
 
-The ordinary unit, CLI, and ML suites need only this checkout. Additional
-cross-version suites use a separately pinned public source and an optional old
-interpreter. See [fixture provenance](https://github.com/ajavanma/PointCloud-Workflows/blob/main/tests/compat/README.md).
+Install this checkout and its dependencies before running the unit, CLI, and ML
+suites. PointCloud Core currently installs from an immutable, hash-checked source
+revision. Additional cross-version suites use a separately pinned RPTU source and
+an optional old interpreter. See [fixture provenance](https://github.com/ajavanma/PointCloud-Workflows/blob/main/tests/compat/README.md).
 
 Clone the public [source repository](https://github.com/ajavanma/PointCloud-Workflows) and create
 a Python 3.11 or newer virtual environment using the [quickstart](quickstart.md).
@@ -24,6 +25,11 @@ row filtering, voxel aggregation, deterministic synthetic scenes, and preservati
 or cleanup of outputs. Prepared-reader tests check strict metadata, exact array
 dtypes and shapes, counts, voxel ordering, point mappings, and label aggregation.
 They also exercise corruption, bundle relocation, and labeled/unlabeled scenes.
+
+Core compatibility tests cover the adapter's array and label contracts, numerical
+edge cases, original-row lifting, and established PCW validation errors. PCW's
+feature means retain their divide-before-sum reduction; direct Core callers use
+its scaled mean. See the [integration boundary](../core-integration.md).
 
 CLI tests run the installed command and module entry point from temporary working
 directories outside the checkout. They exercise the generate, inspect, and
@@ -65,6 +71,13 @@ and wheel, and repeats the CLI tests with the wheel installed in a separate
 environment outside the checkout. The clean wheel check installs core dependencies
 only, keeping PLY optional. Current run results are available in
 [GitHub Actions](https://github.com/ajavanma/PointCloud-Workflows/actions/workflows/tests.yml).
+
+The installed PCW wheel also runs the Core compatibility tests. A separate clean
+environment installs only Core and NumPy and runs
+[`examples/core_roundtrip.py`](https://github.com/ajavanma/PointCloud-Workflows/blob/main/examples/core_roundtrip.py)
+outside the checkout on Python 3.11 and 3.12. This checks that the array example
+does not rely on PCW, its CLI, file formats, or ML dependencies. Follow the
+[standalone instructions](../core-integration.md#standalone-array-example) to run it locally.
 
 The CPU model suite runs real training, safetensors save/load, point-level
 metrics, and prediction. It exercises corruption and contract-mismatch failures,

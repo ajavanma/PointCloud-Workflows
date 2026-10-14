@@ -26,5 +26,6 @@ source nor the generated fixtures are shipped in PCW. See
 [PointCloud Core](https://github.com/ajavanma/pointcloud-core) is a separate,
 NumPy-only library for point-cloud validation, deterministic voxelization, label
 mapping, and reconstructing original-point outputs. PCW retains file formats,
-dataset contracts, training, CLI, containers, and runtime orchestration. A
-versioned library integration will follow its first tested release.
+dataset contracts, training, CLI, containers, and runtime orchestration. It now
+uses Core through a [compatibility adapter](core-integration.md), pinned to the
+prepared `0.1.0` source revision until that package is published to PyPI.

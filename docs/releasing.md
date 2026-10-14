@@ -64,6 +64,10 @@ that version decision; see [migration](migration.md).
 
 Run the supported tests and inspect the wheel, source archive, dependency
 alerts, and generated docs. Merge only after all five required checks pass.
+Replace the transitional PointCloud Core source pin with a tested PyPI release
+and regenerate the lockfile first. The release workflow rejects direct URL
+dependencies in package metadata, so source integration alone is not releasable
+to PyPI.
 Create the matching `v<version>` tag on that reviewed commit without moving
 existing tags. Before release, confirm the public repository, environments,
 PyPI identity, and source version are the intended ones.
@@ -127,7 +131,10 @@ PyTorch dependencies. Its own
 tracks the wheel, source archive, tests, and package-index setup. Release
 preparation does not upload to PyPI or reserve the package name.
 
-PCW does not yet depend on the library. Integrate a published, pinned library
-version only after parity checks against PCW's dataset and voxelization fixtures.
-Preserve existing artifact schemas and model/runtime compatibility during that
-integration.
+PCW now depends on Core's prepared `0.1.0` source at immutable commit
+`5c28a700c30aee6186cfe30f6cd74708289f0743`, with the archive hash checked during
+installation. Compatibility tests preserve PCW's dataset and artifact contracts,
+feature reduction, error behavior, and model/runtime checks. The
+[integration guide](core-integration.md) includes a standalone Core example.
+Once Core is published, replace this transitional source pin with its tested
+package-index version before a PCW release.

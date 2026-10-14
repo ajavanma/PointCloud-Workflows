@@ -38,11 +38,20 @@ jobs:
           python - <<'PY'
           import os
           import runpy
+          import tomllib
+          from packaging.requirements import Requirement
           from packaging.version import Version
           version = runpy.run_path('src/pointcloud_workflows/_version.py')['__version__']
           parsed = Version(version)
           if parsed.is_devrelease or parsed.local or os.environ['GITHUB_REF'] != 'refs/tags/v' + version:
               raise SystemExit('Tag must exactly match a non-development package version.')
+          with open('pyproject.toml', 'rb') as stream:
+              project = tomllib.load(stream)['project']
+          requirements = project['dependencies'] + [
+              item for group in project.get('optional-dependencies', {}).values() for item in group
+          ]
+          if any(Requirement(item).url for item in requirements):
+              raise SystemExit('Replace source URL dependencies with tested PyPI versions before publishing PCW.')
           PY
       - name: Build and inspect both distributions
         run: |

@@ -12,6 +12,14 @@ python -m unittest discover -s tests/cli -v
 label mapping, aligned filtering, voxel aggregation and point mappings, deterministic
 synthetic data, and output preservation/cleanup. These tests do not require Open3D, PyTorch, WarpConvNet, a GPU, or the original point-cloud data.
 
+`test_core_integration.py` exercises the real PointCloud Core dependency through
+PCW's adapters. Independent expected arrays cover negative voxel boundaries,
+declared class-order ties, ignored labels, invalid rows, sparse original point IDs,
+and prediction reconstruction. Exact floating-point fixtures preserve PCW's
+historical feature-mean bytes where Core's scaled mean differs, including
+subnormal values. Read-only inputs and memory-sharing checks guard against mutation.
+The suite also lifts multichannel scores through PCW's mappings using Core directly.
+
 `tests/cli` runs the installed `pcw` command and module entry point, plus the
 `rptu` and `python -m rptu_ai_toolkit` compatibility aliases, from temporary
 working directories outside the checkout. It checks version/help, diagnostics,
@@ -20,8 +28,10 @@ inspect → preprocess workflow verifies output checksums, original point alignm
 label targets, byte reproducibility, and cleanup on failure. An import guard
 fails if help, diagnostics, or data commands try to import ML libraries.
 
-CI builds the package and repeats the CLI suite with the wheel installed in a
-fresh environment. This catches packaging errors that an editable install can hide.
+CI builds the package and repeats the CLI suite and Core integration tests with
+the wheel installed in a fresh environment outside the checkout. This catches
+packaging errors that an editable install can hide. The standalone Core example
+also runs in an environment containing Core without PCW or ML dependencies.
 The clean wheel workflow requires only core dependencies, so PLY remains optional.
 The unit test installation includes the `io` extra to exercise the PLY adapter;
 PLY-specific tests skip when that extra is absent.

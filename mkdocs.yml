@@ -36,6 +36,7 @@ nav:
       - Utilities: gitbook/utils.md
   - Reference:
       - Dataset specification: datasets.md
+      - PointCloud Core: core-integration.md
       - Containers: containers.md
       - Migration: migration.md
       - Runtime advisories: runtime-advisories.md

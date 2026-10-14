@@ -33,5 +33,9 @@ Training supports epoch checkpoints and `--resume`, with durable attempt records
 and verified completed retries. The [roadmap](todo.md) continues with public-data
 recipes, spatial chunking, releases, Helm Jobs, and Fleet examples. Use `pcw` for the current workflow; research scripts remain in the original RPTU repository.
 
-Private source: [ajavanma/PointCloud-Workflows on GitHub](https://github.com/ajavanma/PointCloud-Workflows).
+The NumPy-only [PointCloud Core integration](../core-integration.md) supplies the
+shared array operations while PCW retains dataset formats and workflow execution.
+Its standalone example can run independently of PCW.
+
+Public source: [ajavanma/PointCloud-Workflows on GitHub](https://github.com/ajavanma/PointCloud-Workflows).
 The project is MIT licensed.

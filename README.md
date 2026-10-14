@@ -74,9 +74,10 @@ pcw preprocess --manifest runs/demo-data/manifest.json --output runs/demo-prepar
 pcw inspect --prepared runs/demo-prepared/prepared.json
 ```
 
-The package depends on PyYAML and NumPy. Installation does not install PyTorch,
-WarpConvNet, MinkowskiEngine, Open3D, or CUDA. Python 3.11 and 3.12 are covered by
-the CPU CI matrix.
+The base package depends on PyYAML, NumPy, and PointCloud Core. Core `0.1.0`
+is installed from a hash-checked immutable source revision while its first PyPI
+release is prepared. Installation does not install PyTorch, WarpConvNet,
+MinkowskiEngine, Open3D, or CUDA. Python 3.11 and 3.12 are covered by the CPU CI matrix.
 
 The demo has four small scenes assigned to train, validation, test, and prediction
 splits. It deliberately includes invalid rows, ignored labels, class collisions,
@@ -189,6 +190,21 @@ moving the bundle and without access to the original dataset. It verifies the
 saved artifacts' internal consistency; provenance hashes do not authenticate their
 publisher or prove the transformation against unavailable raw data.
 
+## PointCloud Core and the workflow layer
+
+[PointCloud Core](https://github.com/ajavanma/pointcloud-core) supplies the
+NumPy array operations: validation, reversible labels, voxel grouping, and safe
+lifting of voxel results to original rows. PCW owns manifests, readers, artifact
+schemas, models, checkpoints, CLI, and containers. A small adapter preserves PCW's
+errors and existing floating-point feature reduction, so artifact formats and
+resume requirements remain unchanged.
+
+For a standalone example with no PCW imports or model dependencies, run
+[`examples/core_roundtrip.py`](examples/core_roundtrip.py). It validates synthetic
+arrays, voxelizes them, and restores prediction rows with sparse point IDs and
+invalid-row markers. See [Core integration](docs/core-integration.md) for the
+separate installation command, expected output, and numerical compatibility rules.
+
 ## Configuration
 
 The application YAML schema is limited to paths and runtime settings. Dataset and ML
@@ -257,6 +273,8 @@ PyTorch build.
 
 CI runs the CPU unit and CLI tests, builds a source distribution and a wheel,
 and exercises the wheel in a separate environment from outside the checkout.
+Core parity tests also run against the installed PCW wheel; the standalone example
+runs in an independent environment containing only Core and NumPy.
 Help, diagnostics, and data-command tests prevent accidental ML imports.
 Separate CI jobs run CPU model tests and the complete CPU container workflow. See [tests/README.md](tests/README.md)
 for the independent test suites and external compatibility reference.
@@ -296,7 +314,7 @@ The original research also used Open3D:
 3. WarpConvNet and CPU models with training, evaluation, and prediction — implemented.
 4. CPU/GPU containers, epoch checkpoints, training resume, and durable run attempts — implemented.
 5. Successor package, imports, and CLI with compatibility aliases — implemented.
-6. Prepare the first `0.1.0` release of [PointCloud Core](https://github.com/ajavanma/pointcloud-core), the separate NumPy-only library for validation, voxelization, and point mappings; integrate its versioned API after publication.
+6. Integrate PointCloud Core with compatibility tests and a standalone array example — implemented using an immutable `0.1.0` source pin; switch to the published package after its first PyPI release.
 7. Add a public-data recipe and spatial chunking for larger scenes.
 8. Add optional Helm Jobs, followed by Fleet deployment examples and measured GPU benchmarks.
 

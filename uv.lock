@@ -630,11 +630,25 @@ wheels = [
 ]
 
 [[package]]
+name = "pointcloud-core"
+version = "0.1.0"
+source = { url = "https://github.com/ajavanma/pointcloud-core/archive/5c28a700c30aee6186cfe30f6cd74708289f0743.tar.gz" }
+dependencies = [
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "numpy", version = "2.5.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+]
+sdist = { hash = "sha256:060ee954fabda420d57bc22138f6c62d5946f11e7f076c1e69c863139c52c355" }
+
+[package.metadata]
+requires-dist = [{ name = "numpy", specifier = ">=1.26.4,<3" }]
+
+[[package]]
 name = "pointcloud-workflows"
 source = { editable = "." }
 dependencies = [
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "numpy", version = "2.5.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "pointcloud-core" },
     { name = "pyyaml" },
 ]
 
@@ -654,8 +668,9 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "numpy", specifier = ">=1.26,<3" },
+    { name = "numpy", specifier = ">=1.26.4,<3" },
     { name = "plyfile", marker = "extra == 'io'", specifier = ">=1.1,<2" },
+    { name = "pointcloud-core", url = "https://github.com/ajavanma/pointcloud-core/archive/5c28a700c30aee6186cfe30f6cd74708289f0743.tar.gz" },
     { name = "pyyaml", specifier = ">=6.0.1,<7" },
     { name = "safetensors", extras = ["torch"], marker = "extra == 'ml'", specifier = "==0.7.0" },
     { name = "torch", marker = "extra == 'ml'", specifier = "==2.13.0" },

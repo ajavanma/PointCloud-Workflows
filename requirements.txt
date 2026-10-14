@@ -1,0 +1,4 @@
+# Install the supported base package from the repository root.
+# For training use .[ml]; for development use requirements-test.txt.
+# The original research environment is preserved in the original RPTU repository.
+.

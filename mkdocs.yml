@@ -1,0 +1,49 @@
+site_name: PointCloud Workflows
+site_description: Point-cloud dataset contracts, preprocessing, and reproducible model workflows.
+site_url: https://ajavanma.github.io/PointCloud-Workflows/
+repo_url: https://github.com/ajavanma/PointCloud-Workflows
+edit_uri: edit/main/docs/
+docs_dir: docs
+site_dir: site
+theme:
+  name: mkdocs
+  navigation_depth: 3
+markdown_extensions:
+  - tables
+  - fenced_code
+  - toc:
+      permalink: true
+validation:
+  nav:
+    omitted_files: warn
+    not_found: warn
+  links:
+    not_found: warn
+    anchors: warn
+    unrecognized_links: warn
+nav:
+  - Home: index.md
+  - User guide:
+      - Overview: gitbook/README.md
+      - Quickstart: gitbook/quickstart.md
+      - Commands: gitbook/cli-reference.md
+      - Dataset overview: gitbook/dataset-contract.md
+      - Configuration: gitbook/configuration.md
+      - Preprocessing: gitbook/preprocess.md
+      - Training: gitbook/train.md
+      - Evaluation: gitbook/test.md
+      - Models: gitbook/model.md
+      - Utilities: gitbook/utils.md
+  - Reference:
+      - Dataset specification: datasets.md
+      - Containers: containers.md
+      - Migration: migration.md
+      - Runtime advisories: runtime-advisories.md
+  - Project:
+      - Development: gitbook/development.md
+      - Roadmap: gitbook/todo.md
+      - Provenance: project-lineage.md
+      - Public readiness: public-readiness.md
+      - Documentation publication: gitbook-publication.md
+      - Releasing: releasing.md
+      - Source navigation: gitbook/SUMMARY.md

@@ -1,0 +1,13 @@
+include examples/config.yaml
+include requirements.txt requirements-test.txt uv.lock
+include tests/README.md
+include CONTRIBUTING.md SECURITY.md CHANGELOG.md
+include Dockerfile .dockerignore mkdocs.yml
+recursive-include requirements *.txt
+recursive-include scripts *.sh *.py *.json
+recursive-include docs *.md
+recursive-include media *.png
+recursive-include tests/unit *.py
+recursive-include tests/cli *.py
+recursive-include tests/ml *.py
+recursive-include tests/compat *.py *.md *.json

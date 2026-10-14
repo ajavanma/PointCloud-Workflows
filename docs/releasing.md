@@ -13,13 +13,13 @@ Both workflows require a manual dispatch, this repository to be public, and an
 exact `v<package version>` tag whose commit is on `main`. Development versions
 cannot be published. Neither a push nor a pull request triggers publication.
 
-## Configure once before the first public release
+## Repository and publisher setup
 
-1. Complete the [public readiness review](public-readiness.md) and obtain the
-   owner's explicit decision to make the repository public. The scripts and
-   workflows here do not change repository visibility.
-2. Inspect `python scripts/apply-public-settings.py`. After the repository is
-   public, run `python scripts/apply-public-settings.py --apply` with an
+1. Review the [public-release status](public-readiness.md). Both source
+   repositories are public; publishing a package or documentation site remains
+   a separate release action. The scripts and workflows do not change visibility.
+2. Inspect `python scripts/apply-public-settings.py`. To apply or recheck the
+   repository controls, run `python scripts/apply-public-settings.py --apply` with an
    authenticated administrator's `gh` CLI. It enables and verifies `main`
    protection, secret scanning, push protection, dependency alerts, and private
    vulnerability reporting. It stops on unavailable settings or failed checks;
@@ -104,16 +104,30 @@ The workflow follows the official guidance for
 [PyPI Trusted Publishing](https://docs.pypi.org/trusted-publishers/using-a-publisher/)
 and [GitHub Pages deployments](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
 
-## Private staging status (2026-10-14)
+## Public launch and PointCloud Core (2026-10-14)
 
-Both repositories remain private. Squash-only merges, automatic branch cleanup,
-read-only Actions tokens without PR review approval, and dependency alerts are
-configured. GitHub rejected protected branches, secret scanning, private
-vulnerability reporting, external-contributor workflow approval, and required
-environment reviewers under the current private-repository eligibility. These
-controls remain pending; workflow environment names alone do not enforce review.
-The public-only publication guard prevents release dispatches in this state.
+Both source repositories are public. PCW remains `0.2.0.dev0`; its package and
+MkDocs site have not been published. The [public-release status](public-readiness.md)
+records the verified branch, scanning, reporting, environment, and tag controls.
+The `pypi` and `docs` environments require maintainer review and accept only
+`v*` tags; release-tag updates and deletions are blocked without bypass actors.
+Immutable releases also protect published release assets. CodeQL baselines for
+Python and GitHub Actions completed, and required main-branch analysis blocks
+error-level and high/critical security findings. The public-release record
+documents the four PCW compatibility-harness alerts reviewed and dismissed as
+false positives. Earlier private-plan eligibility errors belong to the staging
+phase. PyPI Trusted Publisher setup and the first release dispatch remain
+outstanding; the documentation site has not been deployed.
 
-After an explicitly authorized visibility change, apply and verify the prepared
-controls, configure protected release environments and immutable release tags,
-and enable Python CodeQL default setup in Security settings before publishing.
+The separate NumPy-only [PointCloud Core repository](https://github.com/ajavanma/pointcloud-core)
+prepares its first `0.1.0` release. It provides point-cloud validation, label
+mapping, deterministic voxelization, and original-point lifting without PCW or
+PyTorch dependencies. Its own
+[release guide](https://github.com/ajavanma/pointcloud-core/blob/main/docs/releasing.md)
+tracks the wheel, source archive, tests, and package-index setup. Release
+preparation does not upload to PyPI or reserve the package name.
+
+PCW does not yet depend on the library. Integrate a published, pinned library
+version only after parity checks against PCW's dataset and voxelization fixtures.
+Preserve existing artifact schemas and model/runtime compatibility during that
+integration.

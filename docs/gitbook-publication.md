@@ -7,13 +7,13 @@ MkDocs. No successor site has been deployed. See [release setup](releasing.md).
 
 The existing [public RPTU guide](https://rptu.gitbook.io/rptu-ai-toolkit/) and
 [original research site](https://arash.gitbook.io/rptu-ai-toolkit/) remain separate.
-They are not automatically synchronized with private successor content.
+They are not automatically synchronized with the public successor repository.
 
 The manual docs workflow builds the reviewed source and deploys only from an
 eligible public repository and selected release tag. Configure GitHub Pages to
 use Actions and protect the `docs` environment before the first deployment.
-The selected destination requires public visibility or an eligible account plan;
-preparation does not enable publication or change repository visibility.
+The source repository is public. Making the source public does not deploy the
+site; no documentation workflow has been dispatched for this launch.
 
 The current documentation uses `pointcloud-workflows`, `pointcloud_workflows`,
 and `pcw`. Compatibility aliases and artifact policies are described in the

@@ -18,18 +18,22 @@ Use the [GPU and CPU quickstart](quickstart.md) for a complete run.
 
 ## Next stages
 
-1. Complete the [public readiness checklist](../public-readiness.md) before an
-   explicitly authorized launch. The [migration guide](../migration.md) defines
-   the implemented compatibility policy.
-2. Release the separate NumPy-only PointCloud Core library and test its versioned
-   integration, then add a public-data recipe and spatial chunking for larger scenes.
+1. Complete the first `0.1.0` release of the separate NumPy-only
+   [PointCloud Core library](https://github.com/ajavanma/pointcloud-core). Its
+   source and release preparation are public; PyPI publication remains a separate
+   release step.
+2. Test a versioned PointCloud Core integration against PCW fixtures, preserving
+   dataset and artifact contracts, then add a public-data recipe and spatial
+   chunking for larger scenes.
 3. Prepare versioned package and image releases with schema compatibility guidance.
 4. Package explicit batch runs as Helm Jobs with preserved dataset and result storage.
 5. Add optional Rancher Fleet examples for existing cluster operators.
 6. Add repeatable GPU performance benchmarks with fixed inputs and model bundles.
 
-The repository remains private. Public release and documentation publication are
-separate decisions; the [public RPTU guide](https://rptu.gitbook.io/rptu-ai-toolkit/)
+Both source repositories are public. PCW remains `0.2.0.dev0`; package, image, and
+documentation publication remain separate release steps. The
+[public-release record](../public-readiness.md) describes repository protections;
+the [public RPTU guide](https://rptu.gitbook.io/rptu-ai-toolkit/)
 continues to describe the shared baseline. See [project lineage](../project-lineage.md)
 and [publication status](../gitbook-publication.md).
 

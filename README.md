@@ -12,7 +12,7 @@ WarpConvNet bundles require CUDA, while PyTorch bundles can move between devices
 
 ## Project identity and compatibility
 
-PointCloud Workflows is an independent successor to
+PointCloud Workflows is a public, independent successor to
 [RPTU AI Toolkit](https://github.com/ajavanma/RPTU_AI_Toolkit), with a fresh Git
 history containing the maintained implementation. Research scripts, old branches,
 logs, and historical commit metadata are not part of this project. The original
@@ -296,8 +296,9 @@ The original research also used Open3D:
 3. WarpConvNet and CPU models with training, evaluation, and prediction — implemented.
 4. CPU/GPU containers, epoch checkpoints, training resume, and durable run attempts — implemented.
 5. Successor package, imports, and CLI with compatibility aliases — implemented.
-6. Develop [PointCloud Core](https://github.com/ajavanma/pointcloud-core), the separate NumPy-only library, then add a public-data recipe and spatial chunking.
-7. Add optional Helm Jobs, followed by Fleet deployment examples and measured GPU benchmarks.
+6. Prepare the first `0.1.0` release of [PointCloud Core](https://github.com/ajavanma/pointcloud-core), the separate NumPy-only library for validation, voxelization, and point mappings; integrate its versioned API after publication.
+7. Add a public-data recipe and spatial chunking for larger scenes.
+8. Add optional Helm Jobs, followed by Fleet deployment examples and measured GPU benchmarks.
 
 The new pipeline will establish its own data and model baselines. BIM export and
 multi-GPU training are future work. Start with the [repository documentation](docs/gitbook/README.md)
@@ -312,4 +313,6 @@ MIT. See [LICENSE](LICENSE).
 
 For development and reporting issues, see [contributing](CONTRIBUTING.md) and
 the [security policy](SECURITY.md). The [public readiness review](docs/public-readiness.md)
-records the remaining launch decisions; the repository is currently private.
+records the public launch controls and remaining package-release setup. PointCloud
+Workflows remains `0.2.0.dev0`; no PCW package, image, or documentation site has
+been published.

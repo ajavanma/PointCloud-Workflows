@@ -1,7 +1,7 @@
 # GPU and CPU quickstart
 
-Use a source checkout and a Python virtual environment. Access to the private
-PointCloud Workflows repository is required to clone it. The GPU profile uses
+Clone the public source repository and use a Python virtual environment.
+The GPU profile uses
 Linux x86_64, Python 3.11, and an NVIDIA driver compatible with CUDA 12.8. The
 reference GPU is the NVIDIA RTX 4070. The CPU fallback uses Python 3.11 or 3.12
 on Linux or macOS.

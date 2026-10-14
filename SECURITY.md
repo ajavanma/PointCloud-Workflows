@@ -7,18 +7,14 @@ its historical dependency environments.
 ## Reporting a vulnerability
 
 Use **Security → Report a vulnerability** on the
-[repository](https://github.com/ajavanma/PointCloud-Workflows/security/advisories)
-when private vulnerability reporting is enabled. Include the affected revision,
+[repository security page](https://github.com/ajavanma/PointCloud-Workflows/security/advisories/new)
+to send a private report to the maintainer. Include the affected revision,
 the smallest synthetic reproducer, expected and actual behavior, and the impact.
 Do not include access tokens, personal data, or a private research dataset.
 
-The repository is currently private and public vulnerability reporting is not
-enabled. Existing collaborators should contact the maintainer through their
-established private channel. If no private contact is available, open an issue
-titled **Security contact request** containing only a request for a private
-reporting channel. Do not put the vulnerability or proof of concept in that
-issue. Establishing and verifying the public reporting channel is a
-[publication prerequisite](docs/public-readiness.md).
+If GitHub's private reporting form is unavailable, open an issue titled
+**Security contact request** containing only a request for a private reporting
+channel. Do not put the vulnerability or proof of concept in that issue.
 
 ## Runtime boundaries
 

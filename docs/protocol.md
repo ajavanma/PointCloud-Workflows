@@ -146,8 +146,15 @@ Pass arguments as an array, with an explicit executable and working directory.
 Keep JSON response and diagnostic buffers bounded. Paths and metadata cross this
 boundary; point arrays and model weights stay in their existing files.
 
-The companion Go client, `pcw-go`, is being developed in a private repository.
-Its local runner invokes this public protocol with cancellation, bounded output,
-and explicit training resume. Python PCW continues to own numerical processing
-and artifact verification. Container and Kubernetes runners are later extensions;
-the local contract does not provide automatic retries or distributed scheduling.
+The public [pcw-go client](https://github.com/ajavanma/pcw-go) invokes this protocol
+with typed requests/results, cancellation, bounded concurrency/output, and
+explicit training resume. Its API is experimental and has no tagged release.
+The [standalone CPU example](https://github.com/ajavanma/pcw-go/tree/main/examples/roundtrip)
+demonstrates synthetic data, preprocessing, training, completed-run resume,
+inspection, evaluation, and prediction. Its
+[design and compatibility policy](https://github.com/ajavanma/pcw-go/blob/main/docs/design.md)
+describes worker pinning and failure handling.
+
+Python PCW continues to own numerical processing and artifact verification.
+Container and Kubernetes runners are later extensions; the local contract does
+not provide automatic retries or distributed scheduling.

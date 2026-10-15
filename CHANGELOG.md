@@ -2,6 +2,8 @@
 
 ## Unreleased — PointCloud Workflows
 
+- Link the public pcw-go local runner, CPU example, and compatibility policy;
+  keep its experimental API and untagged module status explicit.
 - Add opt-in JSON protocol version 1 with uniform success/error envelopes and
   stable error categories, preserving existing `--json` and artifact formats.
 - Add read-only `run inspect` for saved run metadata and verified completion,

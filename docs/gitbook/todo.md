@@ -17,16 +17,20 @@
   example, using an immutable source revision until Core's first PyPI release.
 - Versioned JSON command results/errors and read-only training-run inspection
   for programmatic execution. See the [protocol](../protocol.md).
+- Public [pcw-go library](https://github.com/ajavanma/pcw-go) for local workers,
+  with typed requests, cancellation, bounded concurrency/output, and explicit
+  training resume. Its API remains experimental with no tagged release; see the
+  [CPU example](https://github.com/ajavanma/pcw-go/tree/main/examples/roundtrip).
 
 Use the [GPU and CPU quickstart](quickstart.md) for a complete run.
 
 ## Next stages
 
-The `pcw-go` companion is being developed privately around this protocol. The
-first runner executes local PCW processes with typed requests, bounded output,
-cancellation, and explicit training resume. Python retains array processing and
-model execution. Automatic retries, remote artifact ownership, and container or
-Kubernetes runners need separate execution contracts.
+Use `pcw-go` from a real Go service and stabilize its API around that consumer's
+requirements. Python retains array processing and model execution. Automatic
+retries, remote artifact ownership, and container or Kubernetes runners need
+separate execution contracts. See the Go library's
+[design and compatibility policy](https://github.com/ajavanma/pcw-go/blob/main/docs/design.md).
 
 1. Complete the first `0.1.0` release of the separate NumPy-only
    [PointCloud Core library](https://github.com/ajavanma/pointcloud-core). Its
@@ -40,9 +44,9 @@ Kubernetes runners need separate execution contracts.
 5. Add optional Rancher Fleet examples for existing cluster operators.
 6. Add repeatable GPU performance benchmarks with fixed inputs and model bundles.
 
-Both source repositories are public. PCW remains `0.2.0.dev0`; package, image, and
-documentation publication remain separate release steps. The
-[public-release record](../public-readiness.md) describes repository protections;
+PCW, PointCloud Core, and pcw-go source repositories are public. PCW remains
+`0.2.0.dev0`; package, image, and documentation publication remain separate release
+steps. The [PCW public-release record](../public-readiness.md) describes its protections;
 the [public RPTU guide](https://rptu.gitbook.io/rptu-ai-toolkit/)
 continues to describe the shared baseline. See [project lineage](../project-lineage.md)
 and [publication status](../gitbook-publication.md).

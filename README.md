@@ -163,8 +163,12 @@ messages go to stderr. `--json` emits JSON on stdout on success.
 
 Programs can select `pcw --protocol-version 1 COMMAND ...` for a uniform JSON
 success/error envelope. [The protocol reference](docs/protocol.md) describes
-versioning, error categories, and read-only run inspection. The companion Go
-local runner, `pcw-go`, is being developed privately against this contract.
+versioning, error categories, and read-only run inspection. The public
+[pcw-go library](https://github.com/ajavanma/pcw-go) runs local PCW workers with
+typed requests, cancellation, bounded concurrency/output, and explicit resume.
+Start with its [CPU example](https://github.com/ajavanma/pcw-go/tree/main/examples/roundtrip)
+and [compatibility policy](https://github.com/ajavanma/pcw-go/blob/main/docs/design.md).
+The Go API is experimental and has no tagged release; Python remains the worker runtime.
 
 ## Dataset contracts
 
@@ -321,7 +325,7 @@ The original research also used Open3D:
 4. CPU/GPU containers, epoch checkpoints, training resume, and durable run attempts — implemented.
 5. Successor package, imports, and CLI with compatibility aliases — implemented.
 6. Integrate PointCloud Core with compatibility tests and a standalone array example — implemented using an immutable `0.1.0` source pin; switch to the published package after its first PyPI release.
-7. Add a versioned JSON execution contract and read-only run inspection — implemented; develop the companion Go local runner privately.
+7. Add a versioned JSON execution contract and read-only run inspection — implemented, with the public [pcw-go local runner](https://github.com/ajavanma/pcw-go); stabilize its experimental API through real Go consumers.
 8. Add a public-data recipe and spatial chunking for larger scenes.
 9. Add optional Helm Jobs, followed by Fleet deployment examples and measured GPU benchmarks.
 

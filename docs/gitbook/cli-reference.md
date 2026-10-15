@@ -17,6 +17,7 @@ one of the installed commands or module entry points.
 | `pcw train --prepared PATH --output DIR [--resume]` | Start or resume WarpConvNet or PyTorch training. |
 | `pcw evaluate --prepared PATH --model DIR --output DIR` | Report original-point metrics for the selected split. |
 | `pcw predict --prepared PATH --model DIR --output DIR` | Export original dataset labels and point identities. |
+| `pcw run inspect --output DIR [--json]` | Read saved training state and verify completion without loading ML libraries or modifying the run. |
 | `pcw benchmark` | Reserved for the benchmark workflow. |
 
 Run `pcw COMMAND --help` for a command's arguments.
@@ -97,5 +98,25 @@ and [test and evaluation](test.md).
 Successful commands and help return status `0`. Argument errors, configuration or
 dataset errors, and unimplemented commands return status `2`, with errors on
 stderr. A command's `--json` option emits JSON on stdout on success.
+
+For callers such as a Go application, put `--protocol-version 1` before the
+command to receive a versioned envelope on both success and handled failure:
+
+```sh
+pcw --protocol-version 1 inspect --manifest runs/demo-data/manifest.json
+pcw --protocol-version 1 run inspect --output runs/demo-model
+```
+
+Protocol mode emits one JSON object on stdout and diagnostics on stderr. It
+preserves the ordinary success report inside `result`; errors carry a stable
+category and a message. Help and `--version` remain ordinary CLI operations;
+use protocol `doctor` for metadata. See the [protocol reference](../protocol.md)
+for field, exit-status, compatibility, and cancellation rules.
+
+Run inspection reports `completed` only after verifying the completion marker
+and published artifact checksums. `incomplete` is a saved-state snapshot, not a
+claim about a running process or resume compatibility. It does not create or
+acquire a lock, repair attempts, or change artifacts. `train --resume` performs
+the runtime and checkpoint checks when execution is requested.
 
 Model quality is measured by evaluation on representative held-out data.

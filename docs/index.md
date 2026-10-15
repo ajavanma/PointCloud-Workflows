@@ -17,3 +17,6 @@ source repositories. PCW uses Core for array validation, voxelization, and
 original-point mappings through a compatibility adapter. The current dependency
 pins the prepared Core `0.1.0` source; PyPI publication remains a separate step.
 See [Core integration and the standalone example](core-integration.md).
+
+Programs can use the opt-in [JSON execution protocol](protocol.md) for structured
+command results and errors, including read-only training-run inspection.

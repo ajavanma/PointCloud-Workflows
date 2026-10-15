@@ -37,5 +37,9 @@ The NumPy-only [PointCloud Core integration](../core-integration.md) supplies th
 shared array operations while PCW retains dataset formats and workflow execution.
 Its standalone example can run independently of PCW.
 
+For integration from another program, use the versioned
+[JSON execution protocol](../protocol.md). It includes structured failures and
+read-only run inspection while preserving ordinary CLI and saved-artifact behavior.
+
 Public source: [ajavanma/PointCloud-Workflows on GitHub](https://github.com/ajavanma/PointCloud-Workflows).
 The project is MIT licensed.

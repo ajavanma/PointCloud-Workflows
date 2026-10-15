@@ -261,6 +261,37 @@ def read_completion(output):
         raise MLRuntimeError(f"{output}: cannot verify training completion: {error}") from error
 
 
+def inspect_run(output):
+    """Return a read-only metadata snapshot, verifying completed artifacts.
+
+    No writer lock is acquired or created. An incomplete snapshot does not imply
+    that a writer is idle or that its checkpoints are resumable. Concurrent
+    publication may finish immediately after this read; callers must let the
+    training command validate its own resume conditions under its writer lock.
+    """
+    try:
+        root = _root(output)
+        identity = root.stat()
+        run = _run_document(root)
+        completion = read_completion(root)
+        after = root.stat()
+        if (identity.st_dev, identity.st_ino) != (after.st_dev, after.st_ino) or _run_document(root) != run:
+            raise MLRuntimeError("training run changed during inspection; retry the read")
+        if completion is not None and completion["run_id"] != run["run_id"]:
+            raise MLRuntimeError("training run identity changed during inspection; retry the read")
+        return {
+            "schema_version": 1,
+            "kind": "pcw-run-inspection",
+            "run_id": run["run_id"],
+            "output": str(root),
+            "state": "completed" if completion is not None else "incomplete",
+            "spec": run["spec"],
+            "completion": completion,
+        }
+    except OSError as error:
+        raise MLRuntimeError(f"{output}: cannot inspect training run: {error}") from error
+
+
 class TrainingRun:
     """Reserve or resume one training directory while holding its writer lock."""
 

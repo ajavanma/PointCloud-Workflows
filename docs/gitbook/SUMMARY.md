@@ -3,6 +3,7 @@
 * [PointCloud Workflows](README.md)
 * [GPU and CPU quickstart](quickstart.md)
 * [CLI reference](cli-reference.md)
+* [JSON execution protocol](../protocol.md)
 * [Dataset contract](dataset-contract.md)
 * [PointCloud Core integration](../core-integration.md)
 * [Configuration](configuration.md)

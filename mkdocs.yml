@@ -35,6 +35,7 @@ nav:
       - Models: gitbook/model.md
       - Utilities: gitbook/utils.md
   - Reference:
+      - JSON protocol: protocol.md
       - Dataset specification: datasets.md
       - PointCloud Core: core-integration.md
       - Containers: containers.md

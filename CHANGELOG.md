@@ -2,6 +2,10 @@
 
 ## Unreleased — PointCloud Workflows
 
+- Add opt-in JSON protocol version 1 with uniform success/error envelopes and
+  stable error categories, preserving existing `--json` and artifact formats.
+- Add read-only `run inspect` for saved run metadata and verified completion,
+  without loading the ML runtime or changing run files.
 - Use PointCloud Core for array validation, label mapping, voxel grouping, and
   original-row lifting through a compatibility adapter. Preserve PCW error
   behavior, feature reduction, artifact schemas, and resume requirements.

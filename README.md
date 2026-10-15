@@ -151,6 +151,7 @@ See [training](docs/gitbook/train.md), [models](docs/gitbook/model.md), and
 | `pcw train --prepared PATH --output DIR [--resume]` | Start a model run or resume its latest complete epoch |
 | `pcw evaluate --prepared PATH --model DIR --output DIR` | Evaluate a saved model at original point resolution |
 | `pcw predict --prepared PATH --model DIR --output DIR` | Export original dataset labels and point IDs |
+| `pcw run inspect --output DIR [--json]` | Read saved training state and verify completion without changing run files |
 | `pcw benchmark` | Reserved for the benchmark workflow |
 
 Diagnostics inspect installed package metadata without importing ML libraries.
@@ -159,6 +160,11 @@ Runtime and device selection happen when a model command starts.
 Successful commands and help exit with status `0`. Invalid arguments,
 configuration errors, and unimplemented commands exit with status `2`; error
 messages go to stderr. `--json` emits JSON on stdout on success.
+
+Programs can select `pcw --protocol-version 1 COMMAND ...` for a uniform JSON
+success/error envelope. [The protocol reference](docs/protocol.md) describes
+versioning, error categories, and read-only run inspection. The companion Go
+local runner, `pcw-go`, is being developed privately against this contract.
 
 ## Dataset contracts
 
@@ -315,8 +321,9 @@ The original research also used Open3D:
 4. CPU/GPU containers, epoch checkpoints, training resume, and durable run attempts — implemented.
 5. Successor package, imports, and CLI with compatibility aliases — implemented.
 6. Integrate PointCloud Core with compatibility tests and a standalone array example — implemented using an immutable `0.1.0` source pin; switch to the published package after its first PyPI release.
-7. Add a public-data recipe and spatial chunking for larger scenes.
-8. Add optional Helm Jobs, followed by Fleet deployment examples and measured GPU benchmarks.
+7. Add a versioned JSON execution contract and read-only run inspection — implemented; develop the companion Go local runner privately.
+8. Add a public-data recipe and spatial chunking for larger scenes.
+9. Add optional Helm Jobs, followed by Fleet deployment examples and measured GPU benchmarks.
 
 The new pipeline will establish its own data and model baselines. BIM export and
 multi-GPU training are future work. Start with the [repository documentation](docs/gitbook/README.md)

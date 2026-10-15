@@ -15,10 +15,18 @@
   `pcw` CLI, with old command/import aliases and preserved artifact formats.
 - PointCloud Core integration with compatibility tests and a standalone array
   example, using an immutable source revision until Core's first PyPI release.
+- Versioned JSON command results/errors and read-only training-run inspection
+  for programmatic execution. See the [protocol](../protocol.md).
 
 Use the [GPU and CPU quickstart](quickstart.md) for a complete run.
 
 ## Next stages
+
+The `pcw-go` companion is being developed privately around this protocol. The
+first runner executes local PCW processes with typed requests, bounded output,
+cancellation, and explicit training resume. Python retains array processing and
+model execution. Automatic retries, remote artifact ownership, and container or
+Kubernetes runners need separate execution contracts.
 
 1. Complete the first `0.1.0` release of the separate NumPy-only
    [PointCloud Core library](https://github.com/ajavanma/pointcloud-core). Its

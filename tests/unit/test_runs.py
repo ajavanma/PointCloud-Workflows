@@ -10,7 +10,7 @@ import unittest
 from unittest import mock
 
 from pointcloud_workflows.models import MLRuntimeError
-from pointcloud_workflows.runs import TrainingRun, atomic_json, read_completion, read_run_spec
+from pointcloud_workflows.runs import TrainingRun, atomic_json, inspect_run, read_completion, read_run_spec
 
 
 @unittest.skipUnless(os.name == "posix", "durable training runs require POSIX flock")
@@ -58,6 +58,53 @@ class TestTrainingRuns(unittest.TestCase):
                     self.fail("a completed run cannot start another attempt")
         self.assertEqual(self.snapshot(), before)
         self.assertEqual(set(completion["files"]), {"bundle.json", "training.json", "weights.safetensors"})
+
+    def test_inspection_is_a_snapshot_without_locks_or_resume_claims(self):
+        with TrainingRun(self.output) as run:
+            run.bind_spec(self.spec)
+            # Inspection can coexist with a writer, so incomplete is not idle.
+            report = inspect_run(self.output)
+            self.assertEqual(report, {
+                "schema_version": 1, "kind": "pcw-run-inspection", "run_id": run.run_id,
+                "output": str(self.output), "state": "incomplete", "spec": self.spec,
+                "completion": None,
+            })
+        (self.output / ".run.lock").unlink()
+        before = self.snapshot()
+        self.assertEqual(inspect_run(self.output), report)
+        self.assertFalse((self.output / ".run.lock").exists())
+        self.assertEqual(self.snapshot(), before)
+
+    def test_inspection_rejects_corruption_and_symlinks_without_mutation(self):
+        self.complete_run()
+        alias = self.root / "alias"
+        alias.symlink_to(self.output, target_is_directory=True)
+        with self.assertRaisesRegex(MLRuntimeError, "symlink"):
+            inspect_run(alias)
+        (self.output / "weights.safetensors").write_bytes(b"corrupted")
+        before = self.snapshot()
+        with self.assertRaisesRegex(MLRuntimeError, "checksum mismatch"):
+            inspect_run(self.output)
+        self.assertEqual(self.snapshot(), before)
+        missing = self.root / "missing"
+        with self.assertRaises(MLRuntimeError):
+            inspect_run(missing)
+        self.assertFalse(missing.exists())
+
+    def test_inspection_rejects_run_identity_change_during_read(self):
+        with TrainingRun(self.output) as run:
+            run.bind_spec(self.spec)
+        original = read_completion
+
+        def replace_run(output):
+            document = json.loads((self.output / "run.json").read_text())
+            document["run_id"] = "0" * 32
+            atomic_json(self.output / "run.json", document)
+            return original(output)
+
+        with mock.patch("pointcloud_workflows.runs.read_completion", side_effect=replace_run):
+            with self.assertRaisesRegex(MLRuntimeError, "changed during inspection"):
+                inspect_run(self.output)
 
     def test_existing_output_without_resume_rejects_without_changes(self):
         self.complete_run()

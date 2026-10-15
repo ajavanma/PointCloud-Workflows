@@ -2,6 +2,8 @@
 
 ## Unreleased — PointCloud Workflows
 
+- Document the pcw-go HTTP service example, including bounded synchronous CPU
+  workflows, cancellation, and per-request artifact ownership.
 - Link the public pcw-go local runner, CPU example, and compatibility policy;
   keep its experimental API and untagged module status explicit.
 - Add opt-in JSON protocol version 1 with uniform success/error envelopes and

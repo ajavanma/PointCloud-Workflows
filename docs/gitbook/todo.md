@@ -21,14 +21,18 @@
   with typed requests, cancellation, bounded concurrency/output, and explicit
   training resume. Its API remains experimental with no tagged release; see the
   [CPU example](https://github.com/ajavanma/pcw-go/tree/main/examples/roundtrip).
+- A [Go HTTP service example](https://github.com/ajavanma/pcw-go/tree/main/examples/service)
+  runs the synthetic CPU workflow through prediction with per-request artifacts,
+  bounded concurrency, deadlines, and cancellation. It uses the pinned Python
+  worker and keeps its HTTP API experimental.
 
 Use the [GPU and CPU quickstart](quickstart.md) for a complete run.
 
 ## Next stages
 
-Use `pcw-go` from a real Go service and stabilize its API around that consumer's
-requirements. Python retains array processing and model execution. Automatic
-retries, remote artifact ownership, and container or Kubernetes runners need
+Refine the Go service example and stabilize the client API from consumer
+requirements and feedback. Python retains array processing and model execution.
+Automatic retries, remote artifact ownership, and container or Kubernetes runners need
 separate execution contracts. See the Go library's
 [design and compatibility policy](https://github.com/ajavanma/pcw-go/blob/main/docs/design.md).
 

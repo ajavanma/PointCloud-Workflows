@@ -155,6 +155,21 @@ inspection, evaluation, and prediction. Its
 [design and compatibility policy](https://github.com/ajavanma/pcw-go/blob/main/docs/design.md)
 describes worker pinning and failure handling.
 
+The [Go HTTP service example](https://github.com/ajavanma/pcw-go/tree/main/examples/service)
+embeds the same client in a standard-library HTTP server. Its synchronous
+`POST /v1/workflows` accepts only optional `seed` and `voxel_size` values. The
+service generates and inspects synthetic data, preprocesses and inspects voxels,
+trains the CPU model for one epoch, verifies completed run state, then evaluates
+and predicts. It requires the pinned Python worker with the CPU ML dependencies.
+
+Each accepted workflow gets its own artifact directory. A successful result
+receipt is saved there; a failure retains partial output for inspection. A
+whole-workflow concurrency limit rejects excess requests with HTTP `429`, and
+deadlines, client disconnects, and service shutdown cancel active workers. The
+example binds to localhost by default. It provides no queue, uploads, automatic
+retries, resume endpoint, authentication, or deployment configuration. Its HTTP
+API is experimental and distinct from the versioned PCW CLI protocol.
+
 Python PCW continues to own numerical processing and artifact verification.
 Container and Kubernetes runners are later extensions; the local contract does
 not provide automatic retries or distributed scheduling.

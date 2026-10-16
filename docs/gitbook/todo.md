@@ -22,9 +22,11 @@
   training resume. Its API remains experimental with no tagged release; see the
   [CPU example](https://github.com/ajavanma/pcw-go/tree/main/examples/roundtrip).
 - A [Go HTTP service example](https://github.com/ajavanma/pcw-go/tree/main/examples/service)
-  runs the synthetic CPU workflow through prediction with per-request artifacts,
-  bounded concurrency, deadlines, and cancellation. It uses the pinned Python
-  worker and keeps its HTTP API experimental.
+  runs registered local datasets or synthetic inputs through CPU prediction with
+  per-request artifacts, bounded concurrency, deadlines, and cancellation. Its
+  [dataset registry](https://github.com/ajavanma/pcw-go/tree/main/examples/service#registered-datasets)
+  pins raw NPZ/PLY manifests by checksum and records input identity in receipts.
+  It uses the pinned Python worker and keeps its HTTP API experimental.
 
 Use the [GPU and CPU quickstart](quickstart.md) for a complete run.
 
@@ -32,6 +34,8 @@ Use the [GPU and CPU quickstart](quickstart.md) for a complete run.
 
 Refine the Go service example and stabilize the client API from consumer
 requirements and feedback. Python retains array processing and model execution.
+Registered dataset support uses fixture-based integration tests; a documented
+public-data recipe and measured real-data baseline remain separate work.
 Automatic retries, remote artifact ownership, and container or Kubernetes runners need
 separate execution contracts. See the Go library's
 [design and compatibility policy](https://github.com/ajavanma/pcw-go/blob/main/docs/design.md).

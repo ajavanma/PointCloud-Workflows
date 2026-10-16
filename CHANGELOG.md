@@ -2,6 +2,8 @@
 
 ## Unreleased — PointCloud Workflows
 
+- Document registered dataset inputs for the pcw-go HTTP service: operator-owned
+  local manifests, checksum verification, and dataset identity in result receipts.
 - Document the pcw-go HTTP service example, including bounded synchronous CPU
   workflows, cancellation, and per-request artifact ownership.
 - Link the public pcw-go local runner, CPU example, and compatibility policy;

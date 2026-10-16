@@ -169,9 +169,12 @@ typed requests, cancellation, bounded concurrency/output, and explicit resume.
 Start with its [CPU example](https://github.com/ajavanma/pcw-go/tree/main/examples/roundtrip)
 and [compatibility policy](https://github.com/ajavanma/pcw-go/blob/main/docs/design.md).
 The [Go HTTP service example](https://github.com/ajavanma/pcw-go/tree/main/examples/service)
-accepts a seed and voxel size, then runs synthetic data generation through CPU
-training, evaluation, and prediction. It bounds concurrent workflows, cancels
-workers on deadlines or disconnects, and keeps each request's artifacts together.
+accepts an operator-registered `dataset_id` or generates synthetic data, then
+runs preprocessing, CPU training, evaluation, and prediction. Its
+[registered dataset guide](https://github.com/ajavanma/pcw-go/tree/main/examples/service#registered-datasets)
+uses checksum-pinned local NPZ/PLY manifests with separate input and output roots.
+It bounds concurrent workflows, cancels workers on deadlines or disconnects,
+and keeps each request's artifacts and dataset identity together.
 The Go API is experimental and has no tagged release; Python remains the worker runtime.
 
 ## Dataset contracts
@@ -329,7 +332,7 @@ The original research also used Open3D:
 4. CPU/GPU containers, epoch checkpoints, training resume, and durable run attempts — implemented.
 5. Successor package, imports, and CLI with compatibility aliases — implemented.
 6. Integrate PointCloud Core with compatibility tests and a standalone array example — implemented using an immutable `0.1.0` source pin; switch to the published package after its first PyPI release.
-7. Add a versioned JSON execution contract and read-only run inspection — implemented, with the public [pcw-go local runner](https://github.com/ajavanma/pcw-go) and [HTTP service example](https://github.com/ajavanma/pcw-go/tree/main/examples/service); refine the service and experimental API from consumer requirements and feedback.
+7. Add a versioned JSON execution contract and read-only run inspection — implemented, with the public [pcw-go local runner](https://github.com/ajavanma/pcw-go) and [HTTP service example](https://github.com/ajavanma/pcw-go/tree/main/examples/service) for registered datasets or synthetic inputs; refine the service and experimental API from consumer requirements and feedback.
 8. Add a public-data recipe and spatial chunking for larger scenes.
 9. Add optional Helm Jobs, followed by Fleet deployment examples and measured GPU benchmarks.
 

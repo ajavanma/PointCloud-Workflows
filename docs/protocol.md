@@ -157,13 +157,31 @@ describes worker pinning and failure handling.
 
 The [Go HTTP service example](https://github.com/ajavanma/pcw-go/tree/main/examples/service)
 embeds the same client in a standard-library HTTP server. Its synchronous
-`POST /v1/workflows` accepts only optional `seed` and `voxel_size` values. The
-service generates and inspects synthetic data, preprocesses and inspects voxels,
-trains the CPU model for one epoch, verifies completed run state, then evaluates
-and predicts. It requires the pinned Python worker with the CPU ML dependencies.
+`POST /v1/workflows` accepts an optional registered `dataset_id` and `voxel_size`.
+Without a dataset ID, it generates synthetic data using the optional `seed`.
+The seed also controls model training in both modes.
+The service inspects the input dataset, preprocesses and inspects voxels, trains
+the CPU model for one epoch, verifies completed run state, then evaluates and
+predicts. It requires the pinned Python worker with the CPU ML dependencies;
+PLY inputs also require PCW's optional PLY dependency.
+
+The operator supplies a `-datasets` JSON registry at startup. Registry schema
+version 1 maps each ID to a local `manifest` path and its SHA-256 digest;
+relative paths resolve from the registry file's directory after resolving any
+symlinks in the registry path. See the
+[registered dataset guide](https://github.com/ajavanma/pcw-go/tree/main/examples/service#registered-datasets)
+for the registry format and launch commands. Each entry uses PCW's raw NPZ/PLY
+dataset contract, with train, test, and predict splits; validation scenes are
+optional. PCW verifies scene checksums and the dataset contract during inspection
+and preprocessing. Operators keep source data immutable and read-only, with
+source and output roots separate. HTTP callers select only the registered ID;
+they cannot submit input paths, URLs, or uploads.
 
 Each accepted workflow gets its own artifact directory. A successful result
-receipt is saved there; a failure retains partial output for inspection. A
+receipt is saved there, including the registered dataset's ID and manifest hash
+without its input path. Registered raw data stays in its source directory;
+receipt artifact references name the workflow's outputs. A failure retains
+partial output for inspection and returns a generic error. A
 whole-workflow concurrency limit rejects excess requests with HTTP `429`, and
 deadlines, client disconnects, and service shutdown cancel active workers. The
 example binds to localhost by default. It provides no queue, uploads, automatic
